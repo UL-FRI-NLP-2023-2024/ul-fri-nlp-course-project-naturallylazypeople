@@ -1,0 +1,25 @@
+Use the Methods section to describe what you did an how you did it -- in what way did you prepare the data, what algorithms did you use, how did you test various solutions ... Provide all the required details for a reproduction of your work.
+
+Below are \LaTeX examples of some common elements that you will probably need when writing your report (e.g. figures, equations, lists, code examples ...).
+
+\subsection*{Code examples}
+
+You can also insert short code examples. You can specify them manually, or insert a whole file with code. Please avoid inserting long code snippets, advisors will have access to your repositories and can take a look at your code there. If necessary, you can use this technique to insert code (or pseudo code) of short algorithms that are crucial for the understanding of the manuscript.
+
+\lstset{language=Python}
+\lstset{caption={Insert code directly from a file.}}
+\lstset{label={lst:code_file}}
+\lstinputlisting[language=Python]{code/example.py}
+
+\lstset{language=R}
+\lstset{caption={Write the code you want to insert.}}
+\lstset{label={lst:code_direct}}
+\begin{lstlisting}
+import(dplyr)
+import(ggplot)
+
+ggplot(diamonds,
+	   aes(x=carat, y=price, color=cut)) +
+  geom_point() +
+  geom_smooth()
+\end{lstlisting}
