@@ -1,0 +1,34 @@
+\textbf{The power of Scale for Parameter-Efficient Prompt Tunning}\cite{lester2021power} presents prompt tuning as an effective mechanism for conditioning frozen language models to perform specific tasks. The paper shows that prompt tuned T5-XXL model outperforms GPT-3 175B in SuperGLUE benchmark, despite having 16 times less parameters.
+
+
+General overview:
+
+\begin{itemize}
+    \item definition of prompt tuning in the context of T5 fine tuning
+    \item propose three options for initialization of prompt initialization and try different prompt lengths
+    \item propose three methods for unlearning span corruption
+    \item describe the results for different parameters
+\end{itemize}
+
+\begin{enumerate}
+    \item \textbf{Prompt Tuning}
+    
+    Instead of modeling classification as the probability $Pr(y|X)$, it is modeled as $Pr(Y|X)$, where y is a single class label, Y is a sequence of tokens that represent a class label and X is a series of tokens. In T5 models in particular it is modeled as $Pr_\theta(Y|X)$
+    When using prompt tuning the we use a $Pr_{\theta;\theta_p}(Y|[P;X])$ where P are prompt tokens. Models are trained to maximize the probability of Y, but only prompt parameters are updated.
+    \begin{enumerate}
+        \item \textbf{Design Decisions:} there are many ways of initializing the prompt representations. One possibility is training from scratch using random initialization. Better option is to initialize each prompt token to an embedding from models vocabulary. For classification tasks prompts could be initialized as embeddings that enumerate the output classes.
+        \item \textbf{Unlearning Span Corruption:} span corruption could be a major problem of T5 model, so the paper describes experiments with three settings. "Span Corruption" uses pre-trained T5 as a frozen model. "Span Corruption + Sentinel" uses the same model but preappends setinels to all downstream targets. "LM Adaptation" continues with T5 self-supervised training for small number of additional steps, given a natural text prefix as input. LM adaptation transforms T5 into model more like GPT-3.
+    \end{enumerate}
+    \item  \textbf{Results}
+    
+    Frozen models ar built on top of pre-trained T5 checkpoints. The preformance is measured no SuperGLUE benchmark, each of the prompts is trained on a single SuperGLUE task. Prompts are tranied for 30000 steps using cross-entropy loss with a constant learning rate  of 0.3 and batch size of 32.
+    \begin{enumerate}
+        \item \textbf{Closing th Gap:} Prompt tuning becomes more competitive with model tuning as scale increases. When comparing with GPT-3 few shot preformance on SuperGLUE it is shown that T5-Small outperforms GPT-3 XL that is over 16 times larger.
+        \item \textbf{Abation Study:}
+        \begin{enumerate}
+            \item Prompt lengths of sizes \{1, 5, 20, 100, 150\} were used, values above 20 produced only marginal increases
+            \item Prompt initialization: for random initialization they sample uniformly from range [-0.5, 0.5]. For initialization from sampled vocabulary they restrict to 5000 most common tokens in T5's vocabulary. For "class label" initialization they take embeddings for the string representations of each class in downstream task. 
+            \item Pre-training objective. The "span corruption" objective is not well suited for training frozen models and adding sentinels has little benefit. LM adaptation adds value across all model sizes.
+        \end{enumerate}
+    \end{enumerate}
+\end{enumerate}

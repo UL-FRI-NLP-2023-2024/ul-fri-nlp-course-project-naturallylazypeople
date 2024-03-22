@@ -21,11 +21,13 @@
 \documentclass[fleqn,moreauthors,10pt]{ds_report}
 \usepackage[english]{babel}
 \usepackage{xcolor}
+\usepackage{tabularx}
+
 
 \graphicspath{{fig/}}
 
 
-\newcommand{\todo}[1]{\textcolor{red}{\textbf{\MakeUppercase{#1}}}}
+\newcommand{\todo}[1]{\textcolor{red}{\textbf{#1}}}
 
 %----------------------------------------------------------------------------------------
 %	ARTICLE INFORMATION
@@ -39,10 +41,10 @@
 %\Archive{Final report} 
 
 % Article title
-\PaperTitle{Parameter-Efficient Fine-Tuning of Language Models} 
+\PaperTitle{Parameter-Efficient Fine-Tuning of Large Language Models} 
 
 % Authors (student competitors) and their info
-\Authors{Ondra Komin, Andrej Susnik, Eileen Vu}
+\Authors{Ondřej Komín, Andrej Sušnik, Eileen Vu}
 
 % Advisors
 \affiliation{\textit{Advisors: Slavko Žitnik}}
@@ -81,16 +83,13 @@
 \input{content/2_relatedwork}
 %------------------------------------------------
 \section*{Methods}
-\input{content/3_methods}
+\input{content/3_0_methods}
 %------------------------------------------------
 \section*{Results}
 \input{content/4_results}
 %------------------------------------------------
 \section*{Discussion}
 \input{content/5_discussion}
-%------------------------------------------------
-\section*{Acknowledgments}
-\input{content/6_acknowledgments}
 %----------------------------------------------------------------------------------------
 %	REFERENCE LIST
 %----------------------------------------------------------------------------------------
