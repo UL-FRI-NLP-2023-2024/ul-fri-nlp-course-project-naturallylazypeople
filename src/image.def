@@ -16,6 +16,7 @@ From: nvidia/cuda:12.1.1-base-ubuntu22.04
     apt update -y 
     apt install -y wget
     apt install -y sudo
+    apt install -y bzip2
 
     # install Miniconda
     wget https://repo.anaconda.com/miniconda/Miniconda3-4.6.14-Linux-x86_64.sh -O Miniconda.sh
@@ -27,9 +28,9 @@ From: nvidia/cuda:12.1.1-base-ubuntu22.04
     conda install -y Pillow 
     conda install -y numba 
     conda install -y cudatoolkit
+    conda install -c huggingface transformers
 
     chmod a+rx /exec/*.py
-    chmod a+r /exec/*.conf
     export PATH=/exec:${PATH}
 
 %runscript
@@ -38,8 +39,6 @@ From: nvidia/cuda:12.1.1-base-ubuntu22.04
     echo "  apptainer exec mb-gpu.sif mandelbrot-gpu.py --config <config file>"
     echo
     echo "  <config file> example:"
-    echo "--------------------------"
-    cat /exec/default.conf
     echo "--------------------------"
 
 %test
