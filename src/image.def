@@ -1,0 +1,57 @@
+Bootstrap: docker
+From: nvidia/cuda:12.1.1-base-ubuntu22.04
+
+%files
+    ./main.py /exec/
+
+%environment
+    export LC_ALL=C    
+    export PATH=/opt/conda/bin:${PATH}
+    export PATH=/exec:${PATH}
+
+%post
+    export LC_ALL=C    
+    export DEBIAN_FRONTEND=noninteractive
+
+    apt update -y 
+    apt install -y wget
+    apt install -y sudo
+
+    # install Miniconda
+    wget https://repo.anaconda.com/miniconda/Miniconda3-4.6.14-Linux-x86_64.sh -O Miniconda.sh
+    /bin/bash Miniconda.sh -b -p /opt/conda
+    rm Miniconda.sh
+    export PATH=/opt/conda/bin:${PATH}
+
+    conda install -y numpy 
+    conda install -y Pillow 
+    conda install -y numba 
+    conda install -y cudatoolkit
+
+    chmod a+rx /exec/*.py
+    chmod a+r /exec/*.conf
+    export PATH=/exec:${PATH}
+
+%runscript
+    echo "Usage: "
+    echo "  apptainer exec mb-gpu.sif mandelbrot-gpu.py"
+    echo "  apptainer exec mb-gpu.sif mandelbrot-gpu.py --config <config file>"
+    echo
+    echo "  <config file> example:"
+    echo "--------------------------"
+    cat /exec/default.conf
+    echo "--------------------------"
+
+%test
+    echo "Mandelbrot set python scripts and config file:" 
+    ls -lr /exec/*
+
+%labels
+    Author      uros (dot) lotric (at) fri (dot) uni (dash) lj (dot) si
+    Container   Mandelbrot set on GPU
+    Version     1.0
+    Description Workshop advanced supercomputing (Superračunalištvo bolj zares)
+
+%help
+    For details run:
+        ./mb-gpu.sif
