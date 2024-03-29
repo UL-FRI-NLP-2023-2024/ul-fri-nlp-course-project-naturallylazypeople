@@ -14,6 +14,7 @@ License: MIT (https://gist.github.com/f0k/63a664160d016a491b2cbea15913d549#gistc
 
 import sys
 import ctypes
+import os
 
 
 # Some constants taken from cuda.h
@@ -137,4 +138,11 @@ def main():
 
 
 if __name__=="__main__":
+    pwd = os.getenv('PWD')
+    file = os.path.join(pwd, 'output', 'test.txt')
+    with open(file, 'w') as f:
+        f.write("Hello from apptainer")
+    
     sys.exit(main())
+
+    
