@@ -8,5 +8,6 @@
 #SBATCH --mem=32GB
 #SBATCH --output=sample_out.log
 
+module load CUDA/12.1.1
 srun apptainer build --fakeroot image.sif image.def
 srun apptainer exec --nv image.sif python main.py

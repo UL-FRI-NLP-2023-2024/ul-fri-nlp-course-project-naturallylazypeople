@@ -25,11 +25,14 @@ From: nvidia/cuda:12.1.1-base-ubuntu22.04
     export PATH=/opt/conda/bin:${PATH}
 
     conda update python
+    conda install conda=24.3.0
     conda install -y numpy 
     conda install -y Pillow 
-    conda install -y numba 
-    conda install -y cudatoolkit
+    conda install -y numba cudatoolkit pyculib
     conda install -c huggingface transformers
+    conda install -c huggingface -c conda-forge datasets
+    conda install pytorch torchvision torchaudio pytorch-cuda=12.1 -c pytorch -c nvidia
+
     conda install pip
     pip install peft
 
@@ -38,22 +41,18 @@ From: nvidia/cuda:12.1.1-base-ubuntu22.04
 
 %runscript
     echo "Usage: "
-    echo "  apptainer exec mb-gpu.sif mandelbrot-gpu.py"
-    echo "  apptainer exec mb-gpu.sif mandelbrot-gpu.py --config <config file>"
-    echo
-    echo "  <config file> example:"
-    echo "--------------------------"
+    echo "  apptainer exec image.sif python main.py"
 
 %test
     echo "Mandelbrot set python scripts and config file:" 
     ls -lr /exec/*
 
 %labels
-    Author      uros (dot) lotric (at) fri (dot) uni (dash) lj (dot) si
-    Container   Mandelbrot set on GPU
+    Author      as1767 (at) student (dot) uni (dash) lj (dot) si
+    Container   Transformer training on GPU
     Version     1.0
-    Description Workshop advanced supercomputing (Superračunalištvo bolj zares)
+    Description Natural language processing course
 
 %help
     For details run:
-        ./mb-gpu.sif
+        ./image.sif
