@@ -7,7 +7,7 @@
 #SBATCH --cpus-per-task=1
 #SBATCH --mem=32GB
 #SBATCH --output=sample_out.log
-#SBATCH --time=00:00:30
+#SBATCH --time=02:00:00
 
 module load CUDA/12.1.1
 srun apptainer build --fakeroot image.sif image.def
