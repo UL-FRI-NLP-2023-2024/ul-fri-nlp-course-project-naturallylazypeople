@@ -27,8 +27,9 @@ From: nvidia/cuda:12.1.1-base-ubuntu22.04
     conda update python
     conda install conda=24.3.0
     conda install -y numpy 
+    conda install -y pandas
     conda install -y Pillow 
-    conda install -y numba cudatoolkit pyculib
+    conda install -y numba cudatoolkit
     conda install -c huggingface transformers
     conda install -c huggingface -c conda-forge datasets
     conda install pytorch torchvision torchaudio pytorch-cuda=12.1 -c pytorch -c nvidia
