@@ -1,31 +1,18 @@
-from Dataset import DatasetBase
+from dataset_handler.datasets_base import DatasetBase
+from datasets import load_dataset, Dataset, DatasetDict
 import os
 import pandas as pd
-from datasets import Dataset, DatasetDict
-from utils import clean_text
+from utils.utils import clean_text
 import transformers
 
 
-class SLOSuperGlueDataset(DatasetBase):
+class XSumDataset(DatasetBase):
     def __init__(self, path: str, benchmark: str = 'BoolQ') -> None:
         self.path = os.path.join(path, benchmark)
 
     def get_dataset(self, num_data_points: int = -1):
-        train_df = pd.read_csv(f"{self.path}/train.csv")
-        eval_df = pd.read_csv(f"{self.path}/val.csv")
-        test_df = pd.read_csv(f"{self.path}/test.csv")
-
-        if num_data_points != -1:
-            train_df = train_df[:num_data_points]
-            eval_df = eval_df[:num_data_points]
-            test_df = test_df[:num_data_points]
-
-        return DatasetDict({
-            'train': Dataset.from_pandas(train_df),
-            'validation': Dataset.from_pandas(eval_df),
-            'test': Dataset.from_pandas(test_df)
-        })
-
+        return self.get_dataset_huggingface(self, num_data_points, 'GEM/xsum')
+    
     def get_prepcoress_function(self, tokenizer):
         assert isinstance(tokenizer, transformers.PreTrainedTokenizerFast)
 

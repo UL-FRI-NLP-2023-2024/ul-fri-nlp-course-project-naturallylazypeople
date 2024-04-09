@@ -11,5 +11,5 @@
 #SBATCH --time=02:00:00
 
 module load CUDA/12.1.1
-srun apptainer build --fakeroot image.sif image.def
+srun apptainer build --fakeroot image.sif config/image.def
 srun apptainer exec --nv image.sif python main.py
