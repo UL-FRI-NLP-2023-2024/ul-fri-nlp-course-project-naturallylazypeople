@@ -26,7 +26,7 @@ save_model = True
 # dataset: choose between 'slo_superglue', 'xsum', 'commensense'
 data = 'slo_superglue'
 # if you only want to train on subset of data, specify here
-num_data_points = 100 # else -1
+num_data_points = 100  # else -1
 
 ### --------------------- load dataset --------------------- ###
 
@@ -37,13 +37,17 @@ if data == 'slo_superglue':
         pwd = os.getcwd()
     superglue_data_path = os.path.join(
         pwd, 'data/SuperGLUE-GoogleMT/csv/')
-    
+
     dataset: DatasetBase = SLOSuperGlueDataset(
         superglue_data_path, 'BoolQ')
 elif data == 'commensense':
     dataset: DatasetBase = XSumDataset()
 elif data == 'xsum':
     dataset: DatasetBase = CommonsenseQA()
+
+else:
+    raise RuntimeError(f"Dataset {data} is not supported")
+
 
 dataset_data = dataset.get_dataset(num_data_points)
 
@@ -60,13 +64,13 @@ preprocess_function = dataset.get_prepcoress_function(tokenizer)
 
 # train dataset
 train_dataset = dataset_data['train'].map(
-    preprocess_function, 
-    batched=True, 
+    preprocess_function,
+    batched=True,
     remove_columns=dataset_data["train"].column_names)
 # validation dataset
 val_dataset = dataset_data['val'].map(
-    preprocess_function, 
-    batched=True, 
+    preprocess_function,
+    batched=True,
     remove_columns=dataset_data["train"].column_names)
 
 # set format of data to PyTorch tensors
@@ -109,4 +113,4 @@ print(trainer.evaluate())
 
 ### ---------------- inference on test set ----------------- ###
 
-#TODO: predict on test set
+# TODO: predict on test set

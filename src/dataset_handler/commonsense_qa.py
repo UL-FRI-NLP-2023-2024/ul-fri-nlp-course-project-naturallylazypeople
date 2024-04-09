@@ -7,8 +7,8 @@ import transformers
 
 
 class CommonsenseQA(DatasetBase):
-    def __init__(self, path: str, benchmark: str = 'BoolQ') -> None:
-        self.path = os.path.join(path, benchmark)
+    def __init__(self) -> None:
+        pass
 
     def get_dataset(self, num_data_points: int = -1):
         return self.get_dataset_huggingface(self, num_data_points, 'commonsense_qa')
