@@ -13,6 +13,7 @@ from dataset_handler.commonsense_qa import CommonsenseQA
 
 ### -------------- configure model and data -------------- ###
 
+#TODO all: change checkpoint
 model_checkpoint = "distilbert-base-uncased"
 batch_size = 32
 
@@ -100,6 +101,8 @@ trainer = Trainer(
     eval_dataset=val_dataset,
 )
 
+#TODO Ondra: create LoRA Trainer 
+
 # start training the model
 trainer.train()
 
@@ -109,6 +112,7 @@ if save_model:
 
 ### ----------------- evaluate the model ------------------ ###
 
+#TODO Eileen: add metrics (RAM usage, time, performance metrics, #parameters)
 print(trainer.evaluate())
 
 ### ---------------- inference on test set ----------------- ###
