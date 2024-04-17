@@ -2,14 +2,20 @@
 
 ### ------------------ import libraries ------------------ ###
 import os
-import transformers
-from transformers import AutoTokenizer, AutoModelForSequenceClassification, AutoModelForQuestionAnswering, TrainingArguments, Trainer
-import torch
 
 from dataset_handler.datasets_base import DatasetBase
 from dataset_handler.slo_super_glue import SLOSuperGlueDataset
 from dataset_handler.xsum import XSumDataset
 from dataset_handler.commonsense_qa import CommonsenseQA
+
+from evaluator.evaluator_base import EvaluatorBase
+
+import transformers
+from transformers import AutoTokenizer, AutoModelForSequenceClassification, AutoModelForQuestionAnswering, TrainingArguments
+from trainers.trainer_fft import TrainerFFT
+from trainers.trainer_lora import LoRaTrainer
+
+import torch
 
 ### -------------- configure model and data -------------- ###
 
@@ -20,6 +26,7 @@ batch_size = 32
 # depending on the task, select suitable model
 model = AutoModelForSequenceClassification.from_pretrained(model_checkpoint)
 model_name = model_checkpoint.split("/")[-1]
+model_path = f"output/models/{model_name}"
 
 # set whether model should be saved
 save_model = True
@@ -27,7 +34,7 @@ save_model = True
 # dataset: choose between 'slo_superglue', 'xsum', 'commensense'
 data = 'slo_superglue'
 # if you only want to train on subset of data, specify here
-num_data_points = 100  # else -1
+num_data_points = 20  # else -1
 
 ### --------------------- load dataset --------------------- ###
 
@@ -78,43 +85,60 @@ val_dataset = dataset_data['val'].map(
 train_dataset.set_format("torch")
 val_dataset.set_format("torch")
 
-### ----------------- define training args ----------------- ###
+### -------------- define training arguments -------------- ###
 
 args = TrainingArguments(
-    output_dir=f"models/{model_name}-finetuned",
+    output_dir=model_path,
     evaluation_strategy="epoch",
     learning_rate=2e-5,
     per_device_train_batch_size=batch_size,
     per_device_eval_batch_size=batch_size,
     auto_find_batch_size=True,
-    num_train_epochs=30,
+    num_train_epochs=10,
     weight_decay=0.01,
 )
 
-### ------------------ train the model ------------------- ###
+### ------------------- define trainers ------------------- ###
 
-# define HuggingFace's Trainer
-trainer = Trainer(
+# full fine-tuning trainer
+ft_path = f"output/models/{model_name}-{data}-fft"
+trainer_ft = TrainerFFT(
     model=model,
     args=args,
     train_dataset=train_dataset,
     eval_dataset=val_dataset,
+    trainer_name='fft',
+    model_name=model_name,
+    task_name=data,
+    model_path=ft_path,
+)
+#TODO Ondra: create LoRA Trainer 
+lora_path = f"output/models/{model_name}-{data}-lora"
+trainer_lora = LoRaTrainer(
+    model=model,
+    args=args,
+    train_dataset=train_dataset,
+    eval_dataset=val_dataset,
+    trainer_name='lora',
+    model_name=model_name,
+    task_name=data,
+    model_path=lora_path,
 )
 
-#TODO Ondra: create LoRA Trainer 
+# create list of all trainers that we want to compare against each other
+trainers = [trainer_ft, trainer_lora]
+### ------------ train and evaluate the model ------------- ###
 
-# start training the model
-trainer.train()
+# train and evaluate all trainers by passing to Evaluator
+evaluator = EvaluatorBase(trainers)
+evaluator.train_and_evaluate(save_model)
 
-# save model
-if save_model:
-    trainer.save_model(f"models/{model_name}-{data}-finetuned")
+# get metrics
+metrics = evaluator.get_metrics()
+evaluator.save_metrics(f"output/metrics/metrics.json")
 
-### ----------------- evaluate the model ------------------ ###
-
-#TODO Eileen: add metrics (RAM usage, time, performance metrics, #parameters)
-print(trainer.evaluate())
-
-### ---------------- inference on test set ----------------- ###
+### --------------- inference on test set ----------------- ###
 
 # TODO: predict on test set
+
+print('Done')
