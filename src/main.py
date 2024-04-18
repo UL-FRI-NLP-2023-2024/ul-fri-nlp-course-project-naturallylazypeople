@@ -15,7 +15,16 @@ from transformers import AutoTokenizer, AutoModelForSequenceClassification, Auto
 from trainers.trainer_fft import TrainerFFT
 from trainers.trainer_lora import LoRaTrainer
 
+from lora_utils.utils import get_lora_model, get_lora_training_args, get_lora_trainer, print_trainable_parameters
+
 import torch
+
+from dotenv import load_dotenv
+
+from huggingface_hub import login
+
+load_dotenv("src/.env")
+login(token=os.getenv('HUGGINGFACE_TOKEN'))
 
 ### -------------- configure model and data -------------- ###
 
@@ -45,6 +54,7 @@ if data == 'slo_superglue':
         pwd = os.getcwd()
     superglue_data_path = os.path.join(
         pwd, 'data/SuperGLUE-GoogleMT/csv/')
+    superglue_data_path = '/mnt/c/Users/komin/ownCloud - Bc. Ondřej Komín@owncloud.cesnet.cz/magistr/4. semestr/NLP/Project/ul-fri-nlp-course-project-naturallylazypeople/data/SuperGLUE-GoogleMT/csv/'
 
     dataset: DatasetBase = SLOSuperGlueDataset(
         superglue_data_path, 'BoolQ')
@@ -112,6 +122,7 @@ trainer_ft = TrainerFFT(
     task_name=data,
     model_path=ft_path,
 )
+
 #TODO Ondra: create LoRA Trainer 
 lora_path = f"output/models/{model_name}-{data}-lora"
 trainer_lora = LoRaTrainer(
@@ -124,6 +135,15 @@ trainer_lora = LoRaTrainer(
     task_name=data,
     model_path=lora_path,
 )
+# list(model.named_modules())
+
+
+lora_model = get_lora_model(model)
+print_trainable_parameters(lora_model)
+
+trainer_lora = get_lora_trainer(lora_model, get_lora_training_args('lora'), train_dataset, val_dataset)
+
+
 
 # create list of all trainers that we want to compare against each other
 trainers = [trainer_ft, trainer_lora]

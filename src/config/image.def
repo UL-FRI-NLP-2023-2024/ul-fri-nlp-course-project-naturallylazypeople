@@ -36,6 +36,7 @@ From: nvidia/cuda:12.1.1-base-ubuntu22.04
 
     conda install pip
     pip install peft
+    pip install python-dotenv
 
     chmod a+rx /exec/*.py
     export PATH=/exec:${PATH}
