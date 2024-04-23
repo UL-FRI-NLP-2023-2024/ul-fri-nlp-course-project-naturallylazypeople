@@ -1,6 +1,6 @@
 from transformers import Trainer
 
-class TrainerFFT(Trainer):
+class TrainerBase(Trainer):
     def __init__(self, trainer_name, model_name, task_name, model_path, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.trainer_name = trainer_name

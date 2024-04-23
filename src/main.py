@@ -12,23 +12,16 @@ from evaluator.evaluator_base import EvaluatorBase
 
 import transformers
 from transformers import AutoTokenizer, AutoModelForSequenceClassification, AutoModelForQuestionAnswering, TrainingArguments
-from trainers.trainer_fft import TrainerFFT
+from trainers.trainer_base import TrainerBase
 from trainers.trainer_lora import LoRaTrainer
 
-from lora_utils.utils import get_lora_model, get_lora_training_args, get_lora_trainer, print_trainable_parameters
+from peft import LoraConfig
 
 import torch
 
-from dotenv import load_dotenv
-
-from huggingface_hub import login
-
-load_dotenv("src/.env")
-login(token=os.getenv('HUGGINGFACE_TOKEN'))
-
 ### -------------- configure model and data -------------- ###
 
-#TODO all: change checkpoint
+#TODO all: change checkpoint  # microsoft/deberta-v2  # microsoft/deberta-v2-xlarge
 model_checkpoint = "distilbert-base-uncased"
 batch_size = 32
 
@@ -97,6 +90,7 @@ val_dataset.set_format("torch")
 
 ### -------------- define training arguments -------------- ###
 
+# we might want to give different arguments to different trainers in the future
 args = TrainingArguments(
     output_dir=model_path,
     evaluation_strategy="epoch",
@@ -112,7 +106,7 @@ args = TrainingArguments(
 
 # full fine-tuning trainer
 ft_path = f"output/models/{model_name}-{data}-fft"
-trainer_ft = TrainerFFT(
+trainer_ft = TrainerBase(
     model=model,
     args=args,
     train_dataset=train_dataset,
@@ -123,8 +117,18 @@ trainer_ft = TrainerFFT(
     model_path=ft_path,
 )
 
-#TODO Ondra: create LoRA Trainer 
+# LoRA trainer
 lora_path = f"output/models/{model_name}-{data}-lora"
+lora_config = LoraConfig(  # so far hardcoded
+        r=16,
+        lora_alpha=32,  # rule of thumb alpha = 2*r
+        target_modules=["q_lin", "k_lin","v_lin"],  # The modules (for example, attention blocks) to apply the LoRA update matrices.
+        lora_dropout=0.1,
+        bias="lora_only",
+        modules_to_save=None,  # List of modules apart from LoRA layers to be set as trainable and saved in the final checkpoint. These typically include model’s custom head that is randomly initialized for the fine-tuning task.
+        task_type="SEQ_CLS"
+    )
+
 trainer_lora = LoRaTrainer(
     model=model,
     args=args,
@@ -134,16 +138,8 @@ trainer_lora = LoRaTrainer(
     model_name=model_name,
     task_name=data,
     model_path=lora_path,
+    lora_config=lora_config
 )
-# list(model.named_modules())
-
-
-lora_model = get_lora_model(model)
-print_trainable_parameters(lora_model)
-
-trainer_lora = get_lora_trainer(lora_model, get_lora_training_args('lora'), train_dataset, val_dataset)
-
-
 
 # create list of all trainers that we want to compare against each other
 trainers = [trainer_ft, trainer_lora]

@@ -1,6 +1,7 @@
 import psutil
 import time
 import json
+from utils import utils
 
 class EvaluatorBase:
     def __init__(self, trainers):
@@ -32,6 +33,8 @@ class EvaluatorBase:
 
             metric["training_time"] = training_time
             metric["ram_usage"] = self.compute_ram_usage()
+            metric["all_params"] = utils.trainable_parameters(trainer.model, print=False)["all_params"]
+            metric["trainable_params"] = utils.trainable_parameters(trainer.model, print=False)["trainable_params"]
 
             # Add evaluation metrics from Hugging Face's evaluate module
             metric_names = ["accuracy", "precision", "f1", "bleu", "rouge"]
@@ -53,3 +56,6 @@ class EvaluatorBase:
         with open(output_file, 'w') as f:
             json.dump(metrics, f, indent=4) 
                 
+    def eval_dataset():
+        # TODO: eval testset
+        pass

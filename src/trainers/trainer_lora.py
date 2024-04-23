@@ -1,8 +1,12 @@
-from trainers.trainer_fft import TrainerFFT
+from trainers.trainer_base import TrainerBase
+from peft import get_peft_model
+from copy import deepcopy
 
-class LoRaTrainer(TrainerFFT):
+class LoRaTrainer(TrainerBase):
     def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        # You can add any additional initialization here
+        model = deepcopy(kwargs.pop("model"))
+        lora_config = kwargs.pop("lora_config")
+        model = get_peft_model(model, lora_config)
 
-    # Override methods as needed
+        kwargs["model"] = model
+        super().__init__(*args, **kwargs)
