@@ -29,13 +29,13 @@ batch_size = 32
 model_type = AutoModelForSequenceClassification
 
 # set whether model should be saved
-train_model = False
+train_model = True
 save_model = True
 
 # dataset: choose between 'slo_superglue', 'xsum', 'commensense'
 data = 'slo_superglue'
 # if you only want to train on subset of data, specify here
-num_data_points = 10  # else -1
+num_data_points = 20  # else -1
 
 ### --------------------- load dataset --------------------- ###
 
@@ -107,7 +107,7 @@ args = TrainingArguments(
     per_device_train_batch_size=batch_size,
     per_device_eval_batch_size=batch_size,
     auto_find_batch_size=True,
-    num_train_epochs=4,
+    num_train_epochs=20,
     weight_decay=0.01,
 )
 

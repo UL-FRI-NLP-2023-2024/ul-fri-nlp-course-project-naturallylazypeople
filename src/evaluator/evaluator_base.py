@@ -51,10 +51,8 @@ class EvaluatorBase:
             metric["trainable_params"] = utils.trainable_parameters(trainer.model, print=False)["trainable_params"]
 
             # Add evaluation metrics from Hugging Face's evaluate module
-            metric_names = ["accuracy", "precision", "f1", "bleu", "rouge"]
-            for metric_name in metric_names:
-                eval_result_metric = trainer.evaluate(metric_key_prefix=metric_name)
-                metric.update(eval_result_metric)
+            eval_result_metric = trainer.evaluate()
+            metric.update(eval_result_metric)
 
             self.metrics[trainer.trainer_name] = metric
 
