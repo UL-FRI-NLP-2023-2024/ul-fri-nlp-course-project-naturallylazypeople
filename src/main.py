@@ -11,7 +11,7 @@ from dataset_handler.commonsense_qa import CommonsenseQA
 from evaluator.evaluator_base import EvaluatorBase
 
 import transformers
-from transformers import AutoTokenizer, AutoModelForSequenceClassification, AutoModelForQuestionAnswering, TrainingArguments
+from transformers import AutoTokenizer, AutoModelForSequenceClassification, TrainingArguments
 from trainers.trainer_base import TrainerBase
 from trainers.trainer_lora import LoRaTrainer
 
@@ -19,24 +19,23 @@ from peft import LoraConfig
 
 import torch
 
-### -------------- configure model and data -------------- ###
+### -------------- configure and define data -------------- ###
 
 #TODO all: change checkpoint  # microsoft/deberta-v2  # microsoft/deberta-v2-xlarge
-model_checkpoint = "distilbert-base-uncased"
+model_checkpoint = "microsoft/deberta-v3-base"
 batch_size = 32
 
 # depending on the task, select suitable model
-model = AutoModelForSequenceClassification.from_pretrained(model_checkpoint)
-model_name = model_checkpoint.split("/")[-1]
-model_path = f"output/models/{model_name}"
+model_type = AutoModelForSequenceClassification
 
 # set whether model should be saved
+train_model = False
 save_model = True
 
 # dataset: choose between 'slo_superglue', 'xsum', 'commensense'
 data = 'slo_superglue'
 # if you only want to train on subset of data, specify here
-num_data_points = 20  # else -1
+num_data_points = 10  # else -1
 
 ### --------------------- load dataset --------------------- ###
 
@@ -47,7 +46,6 @@ if data == 'slo_superglue':
         pwd = os.getcwd()
     superglue_data_path = os.path.join(
         pwd, 'data/SuperGLUE-GoogleMT/csv/')
-    superglue_data_path = '/mnt/c/Users/komin/ownCloud - Bc. Ondřej Komín@owncloud.cesnet.cz/magistr/4. semestr/NLP/Project/ul-fri-nlp-course-project-naturallylazypeople/data/SuperGLUE-GoogleMT/csv/'
 
     dataset: DatasetBase = SLOSuperGlueDataset(
         superglue_data_path, 'BoolQ')
@@ -83,12 +81,23 @@ val_dataset = dataset_data['val'].map(
     preprocess_function,
     batched=True,
     remove_columns=dataset_data["train"].column_names)
+# test dataset
+test_dataset = dataset_data['test'].map(
+    preprocess_function,
+    batched=True,
+    remove_columns=[c for c in dataset_data["train"].column_names if c != 'label'])
 
 # set format of data to PyTorch tensors
 train_dataset.set_format("torch")
 val_dataset.set_format("torch")
+test_dataset.set_format("torch")
 
 ### -------------- define training arguments -------------- ###
+
+# load pre-trained model
+model = model_type.from_pretrained(model_checkpoint)
+model_name = model_checkpoint.split("/")[-1]
+model_path = f"output/models/{model_name}"
 
 # we might want to give different arguments to different trainers in the future
 args = TrainingArguments(
@@ -98,23 +107,24 @@ args = TrainingArguments(
     per_device_train_batch_size=batch_size,
     per_device_eval_batch_size=batch_size,
     auto_find_batch_size=True,
-    num_train_epochs=10,
+    num_train_epochs=4,
     weight_decay=0.01,
 )
 
 ### ------------------- define trainers ------------------- ###
 
 # full fine-tuning trainer
-ft_path = f"output/models/{model_name}-{data}-fft"
-trainer_ft = TrainerBase(
+fft_path = f"output/models/{model_name}-{data}-fft"
+trainer_fft = TrainerBase(
     model=model,
     args=args,
     train_dataset=train_dataset,
     eval_dataset=val_dataset,
+    test_dataset=test_dataset,
     trainer_name='fft',
     model_name=model_name,
     task_name=data,
-    model_path=ft_path,
+    model_path=fft_path,
 )
 
 # LoRA trainer
@@ -122,18 +132,18 @@ lora_path = f"output/models/{model_name}-{data}-lora"
 lora_config = LoraConfig(  # so far hardcoded
         r=16,
         lora_alpha=32,  # rule of thumb alpha = 2*r
-        target_modules=["q_lin", "k_lin","v_lin"],  # The modules (for example, attention blocks) to apply the LoRA update matrices.
+        # target_modules=["q_lin", "k_lin", "v_lin"],  # The modules (for example, attention blocks) to apply the LoRA update matrices.
         lora_dropout=0.1,
         bias="lora_only",
         modules_to_save=None,  # List of modules apart from LoRA layers to be set as trainable and saved in the final checkpoint. These typically include model’s custom head that is randomly initialized for the fine-tuning task.
         task_type="SEQ_CLS"
     )
-
 trainer_lora = LoRaTrainer(
     model=model,
     args=args,
     train_dataset=train_dataset,
     eval_dataset=val_dataset,
+    test_dataset=test_dataset,
     trainer_name='lora',
     model_name=model_name,
     task_name=data,
@@ -142,19 +152,24 @@ trainer_lora = LoRaTrainer(
 )
 
 # create list of all trainers that we want to compare against each other
-trainers = [trainer_ft, trainer_lora]
+trainers = [trainer_fft, trainer_lora]
 ### ------------ train and evaluate the model ------------- ###
 
-# train and evaluate all trainers by passing to Evaluator
 evaluator = EvaluatorBase(trainers)
-evaluator.train_and_evaluate(save_model)
 
-# get metrics
-metrics = evaluator.get_metrics()
-evaluator.save_metrics(f"output/metrics/metrics.json")
+if train_model:
+    # train and evaluate all trainers by passing to Evaluator
+    trainers = evaluator.train_and_evaluate(save_model)
+
+    # get metrics
+    metrics = evaluator.get_metrics()
+    evaluator.save_metrics(f"output/metrics/metrics.json")
 
 ### --------------- inference on test set ----------------- ###
 
-# TODO: predict on test set
+for trainer in trainers:
+    print(f"------------------{trainer.trainer_name}------------------")
+    predictions = evaluator.inference_on_test_set(trainer, model_type)
+    print(predictions)
 
-print('Done')
+print('Done :)')

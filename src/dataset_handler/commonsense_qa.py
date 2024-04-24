@@ -45,15 +45,16 @@ class CommonsenseQA(DatasetBase):
             # The offset mappings will give us a map from token to character position in the original context. This will
             # help us compute the start_positions and end_positions.
             offset_mapping = tokenized_examples.pop("offset_mapping")
+            
+            if 'label' in tokenized_examples.keys():
+                # Let's label those examples!
+                tokenized_examples["labels"] = []
 
-            # Let's label those examples!
-            tokenized_examples["labels"] = []
-
-            for i, _ in enumerate(offset_mapping):
-                # We will use 1 for True and 0 for False
-                label = 1 if examples["label"][sample_mapping[i]
-                                               ] == "True" else 0
-                tokenized_examples["labels"].append(label)
+                for i, _ in enumerate(offset_mapping):
+                    # We will use 1 for True and 0 for False
+                    label = 1 if examples["label"][sample_mapping[i]
+                                                ] == "True" else 0
+                    tokenized_examples["labels"].append(label)
 
             return tokenized_examples
 

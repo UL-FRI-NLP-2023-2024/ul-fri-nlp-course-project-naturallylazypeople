@@ -1,3 +1,5 @@
 transformers
 datasets
 evaluate
+peft
+sentencepiece
