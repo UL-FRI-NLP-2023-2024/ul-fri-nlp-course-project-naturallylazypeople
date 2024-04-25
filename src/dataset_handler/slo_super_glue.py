@@ -64,11 +64,13 @@ class SLOSuperGlueDataset(DatasetBase):
                 tokenized_examples["labels"] = []
                 for i, _ in enumerate(offset_mapping):
                     # We will use 1 for True and 0 for False
-                    label = 1 if examples["label"][sample_mapping[i]
-                                                ] == "True" else 0
+                    if examples["label"][sample_mapping[i]]:
+                        label = 1 
+                    else:
+                        label = 0
                     tokenized_examples["labels"].append(label)
-            else:
-                tokenized_examples["labels"] = [0] * len(offset_mapping)  # Placeholder labels
+            # else:
+            #     tokenized_examples["labels"] = [0] * len(offset_mapping)  # Placeholder labels
 
             return tokenized_examples
 
