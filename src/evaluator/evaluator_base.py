@@ -3,6 +3,7 @@ import time
 import json
 from utils import utils
 import torch
+import os
 
 class EvaluatorBase:
     def __init__(self, trainers):
@@ -67,6 +68,9 @@ class EvaluatorBase:
     def save_metrics(self, output_file):
         
         metrics = self.metrics
+        dirs = os.path.dirname(output_file)
+        if not os.path.exists(dirs):
+            os.makedirs(dirs, exist_ok=True)
         with open(output_file, 'w') as f:
             json.dump(metrics, f, indent=4) 
 
