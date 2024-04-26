@@ -2,7 +2,7 @@ datasets==2.18.0
 peft==0.10.0
 evaluate==0.4.1
 transformers==4.39.2
-torch==1.13.0
+torch==2.3
 sentencepiece==0.2.0
 scikit-learn==1.4.0
 pandas
