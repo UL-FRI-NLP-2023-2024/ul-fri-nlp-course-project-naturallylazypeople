@@ -5,10 +5,20 @@ import pandas as pd
 from utils.utils import clean_text
 import transformers
 
+from nltk.corpus import stopwords
+from nltk.tokenize import word_tokenize
+from nltk.stem import SnowballStemmer
+
+# Download NLTK resources if not already downloaded
+import nltk
+nltk.download('punkt')
+nltk.download('stopwords')
 
 class SLOSuperGlueDataset(DatasetBase):
     def __init__(self, path: str, benchmark: str = 'BoolQ') -> None:
         self.path = os.path.join(path, benchmark)
+        self.stop_words = set(stopwords.words('slovene'))
+        self.stemmer = SnowballStemmer('slovene')
 
     def get_dataset(self, num_data_points: int = -1):
         train_df = pd.read_csv(f"{self.path}/train.csv")
@@ -26,6 +36,18 @@ class SLOSuperGlueDataset(DatasetBase):
             'test': Dataset.from_pandas(test_df)
         })
 
+    def preprocess_text(self, text):
+        # Clean and normalize text
+        text = clean_text(text)
+        # Tokenize text
+        tokens = word_tokenize(text, language='slovene')
+        # Remove stopwords
+        tokens = [token for token in tokens if token.lower() not in self.stop_words]
+        # Stemming
+        tokens = [self.stemmer.stem(token) for token in tokens]
+        # Join tokens back into text
+        return ' '.join(tokens)
+
     def get_prepcoress_function(self, tokenizer):
         assert isinstance(tokenizer, transformers.PreTrainedTokenizerFast)
 
@@ -33,11 +55,10 @@ class SLOSuperGlueDataset(DatasetBase):
         doc_stride = 128
 
         def preprocess_function(examples):
-            # print(examples.keys())
             # Clean questions and passages (or context)
-            cleaned_questions = [clean_text(q).lstrip()
+            cleaned_questions = [self.preprocess_text(q).lstrip()
                                  for q in examples["question"]]
-            cleaned_passages = [clean_text(p) for p in examples["passage"]]
+            cleaned_passages = [self.preprocess_text(p) for p in examples["passage"]]
 
             # Tokenize the cleaned inputs
             tokenized_examples = tokenizer(
