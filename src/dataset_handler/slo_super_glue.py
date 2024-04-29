@@ -1,24 +1,25 @@
 from dataset_handler.datasets_base import DatasetBase
-from datasets import Dataset, DatasetDict
 import os
 import pandas as pd
-from utils.utils import clean_text
+from datasets import Dataset, DatasetDict
 import transformers
-
+from utils.utils import clean_text
+import stanza
+import nltk
 from nltk.corpus import stopwords
-from nltk.tokenize import word_tokenize
-from nltk.stem import SnowballStemmer
 
 # Download NLTK resources if not already downloaded
-import nltk
 nltk.download('punkt')
 nltk.download('stopwords')
+
+# Download Stanza Slovene model if not already downloaded
+stanza.download("sl")
 
 class SLOSuperGlueDataset(DatasetBase):
     def __init__(self, path: str, benchmark: str = 'BoolQ') -> None:
         self.path = os.path.join(path, benchmark)
         self.stop_words = set(stopwords.words('slovene'))
-        self.stemmer = SnowballStemmer('slovene')
+        self.nlp = stanza.Pipeline("sl")
 
     def get_dataset(self, num_data_points: int = -1):
         train_df = pd.read_csv(f"{self.path}/train.csv")
@@ -39,14 +40,13 @@ class SLOSuperGlueDataset(DatasetBase):
     def preprocess_text(self, text):
         # Clean and normalize text
         text = clean_text(text)
-        # Tokenize text
-        tokens = word_tokenize(text, language='slovene')
+        # Lemmatize text using Stanza
+        doc = self.nlp(text)
+        lemmatized_tokens = [word.lemma for sentence in doc.sentences for word in sentence.words]
         # Remove stopwords
-        tokens = [token for token in tokens if token.lower() not in self.stop_words]
-        # Stemming
-        tokens = [self.stemmer.stem(token) for token in tokens]
+        lemmatized_tokens = [token for token in lemmatized_tokens if token.lower() not in self.stop_words]
         # Join tokens back into text
-        return ' '.join(tokens)
+        return ' '.join(lemmatized_tokens)
 
     def get_prepcoress_function(self, tokenizer):
         assert isinstance(tokenizer, transformers.PreTrainedTokenizerFast)
