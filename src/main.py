@@ -21,7 +21,7 @@ import torch
 
 ### -------------- configure and define data -------------- ###
 
-#TODO all: change checkpoint  # microsoft/deberta-v2  # microsoft/deberta-v2-xlarge
+#TODO all: change checkpoint  # microsoft/deberta-v2  # microsoft/deberta-v2-xlarge # classla/bcms-bertic
 model_checkpoint = "microsoft/deberta-v3-base"
 batch_size = 32
 
@@ -35,7 +35,7 @@ save_model = True
 # dataset: choose between 'slo_superglue', 'xsum', 'commensense'
 data = 'slo_superglue'
 # if you only want to train on subset of data, specify here
-num_data_points = 20  # else -1
+num_data_points = -1  # else -1
 
 ### --------------------- load dataset --------------------- ###
 
