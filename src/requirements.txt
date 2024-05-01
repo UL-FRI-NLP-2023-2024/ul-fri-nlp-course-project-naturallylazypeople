@@ -5,6 +5,7 @@ transformers==4.39.2
 torch==2.3
 sentencepiece==0.2.0
 scikit-learn==1.4.0
+nltk
 pandas
 Jinja2
 protobuf
