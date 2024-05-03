@@ -1,0 +1,32 @@
+\begin{figure}[ht!]
+    \centering
+    {\includegraphics[scale=0.5]{fig/training_pipieline.png}}
+    \caption{Training Pipeline}
+    \label{fig:pipeline}
+\end{figure}
+
+The training pipeline consists of five main steps, each applicable for the successful fine-tuning of the models for specific tasks. 
+
+\paragraph{Step 1} Initially, we imports necessary libraries and set up the environment. Using custom dataset handlers, we load the datasets based on the specified task. 
+
+\paragraph{Step 2} After loading the dataset, the we apply pre-processing functions tailored to the BERT tokenizer. This step involves tokenizing and encoding the text data, which is essential for input to the BERT model. The pre-processed data is split into train, validation, and test sets, and formatted as PyTorch tensors for compatibility with the BERT model.
+
+\paragraph{Step 3} Next, we configure the training arguments, including parameters such as output directory, evaluation strategy, learning rate, batch size, and number of epochs. It also initializes the BERT model for the task and defines the trainers for the different methods. Each trainer is associated with its specific model path and training configurations.
+\begin{lstlisting}[language=Python, caption={Training Arguments}, label={lst:training_arguments}]
+args = TrainingArguments(
+    output_dir=model_path,
+    evaluation_strategy="epoch",
+    learning_rate=2e-5,
+    per_device_train_batch_size=64,
+    per_device_eval_batch_size=64,
+    auto_find_batch_size=True,
+    num_train_epochs=20,
+    weight_decay=0.01,
+)
+\end{lstlisting}
+
+
+
+\paragraph{Step 4} With the trainers defined, we execute the training process for all PEFT methods. This step involves fine-tuning the BERT model on the data using the specified training arguments and data. 
+
+\paragraph{Step 5} Finally, we evaluate the trained models using the evaluation datasets. Performance metrics such as accuracy, precision, F1-score, and recall are computed for the different methods. The results are compared to assess the effectiveness of each fine-tuning approach on specific tast.

@@ -1,0 +1,29 @@
+We ran the experiments on the Arnes cluster, the compute node that we used included AMD EPYC™ 9124 CPU, 256GB of RAM and NVIDIA H100 GPU. The cluster uses SLURM middleware for it's job managment and we used sbatch command to run our jobs. To have reproducible environment we used containerization with Apptainer. Apptainer is a containerization solution mainly used in high performance computing. We used Python version 3.12 and we have gathered all the requirements into requirements.txt file and specified the versions of the packages. The source code is available in the repository\footnote{\url{https://github.com/UL-FRI-NLP-2023-2024/ul-fri-nlp-course-project-naturallylazypeople}}. Results can be reproduced by logging into the supercomputer cluster of your choice, cloning the repository and executing following commands.
+
+\begin{lstlisting}[language=bash,caption={Commands for running the training and evaluation}]
+cd src
+sbatch run.sh
+\end{lstlisting}
+
+Sbatch command will put job in the SLURM queue. After the job is accepted Apptainer container with the environment will be built. When the environment is built, the main script will be executed inside the containerized environment, firstly all the models will be trained and the evaluated.
+% \subsection{Hardware Configuration}
+% \begin{itemize}
+%     \item \textbf{Central Processing Unit (CPU):} AMD EPYC™ 9124
+%     \item \textbf{Random Access Memory (RAM):} 256GB
+%     \item \textbf{Graphics Processing Unit (GPU):} Nvidia H100
+% \end{itemize}
+
+% \subsection{Software Configuration}
+% \begin{itemize}
+%     \item \textbf{Job Scheduling and Resource Management:} SLURM (Simple Linux Utility for Resource Management)
+%     \item \textbf{Containerization Platform:} Apptainer
+%     \item \textbf{Programming Language:} Python (version not specified)
+%     \item \textbf{Python Dependencies:} Listed in \texttt{requirements.txt}
+% \end{itemize}
+
+% \subsection{Description}
+% The computational environment comprises robust hardware components, including the AMD EPYC™ 9124 CPU, providing high-performance computing capabilities, supported by ample memory resources with 256GB of RAM, and enhanced computational capabilities with the inclusion of the Nvidia H100 GPU.
+
+% To manage computational tasks efficiently, SLURM (Simple Linux Utility for Resource Management) is employed for job scheduling and resource allocation across the cluster infrastructure. Additionally, the Apptainer containerization platform is utilized to encapsulate applications and their dependencies, ensuring reproducibility and portability of computational workflows.
+
+% Python serves as the primary programming language within this environment, facilitating a wide range of scientific and computational tasks. To maintain reproducibility, the specific dependencies and versions of Python packages are documented in the \texttt{requirements.txt} file, ensuring consistency and replicability of computational experiments and analyses.

@@ -1,29 +1,19 @@
-\textbf{Low Rank Adaptation (LoRA)} \cite{hu2021lora} is another PEFT method for fine tuning LLMs. Main principle behind LoRA is fixing the weights of the original model and then injecting trainable low rank decomposition matrix into the current LLM architecture. 
+\paragraph{LoRA}
 
-\begin{enumerate}
-    \item \textbf{Architecture of the LoRA}
+LoRA \cite{hu2021lora} is a method designed for fine-tuning large models. It operates by fixing the weights of the original model and introducing a trainable low-rank decomposition matrix into the LLM architecture. This modified architecture involves fixing the original weights $W_0$ while introducing additional trainable weights $\Delta W$, which can be decomposed into matrices $BA$, where the rank of both $B$ and $A$ is much smaller than that of $W_0$. Consequently, the resulting weights are formulated as $W0 + BA$, significantly reducing the number of parameters that need to be trained. 
 
-    Architecture of model is modified in following way. The original weights $W_{0}$ are fixed and additional trainable weights $\Delta W$ are introduced. $\Delta W$ can be decomposed to $BA$, where rank of both matrices $B$ and $A$ is much smaller than rank of the original $W_{0}$. Resulting weights are constructed as composition $W_{0} + \Delta W = W_{0} + BA$. This way much lower number of parameters is needed to be trained. Graphical depiction can be seen in Figure ~\ref{fig:LoRA}.
+Empirical results indicate that LoRA performs comparably or even better than other methods, while requiring a comparable or lower number of trainable parameters. Notably, LoRA drastically reduces the number of trainable parameters, such as in the case of fine-tuning the GPT-3 model, where the parameter count was reduced by 10000 times, accompanied by a threefold reduction in GPU memory requirement. Additionally, LoRA exhibits several benefits, including the ability to train specialized models without introducing latency, as seen in adapter methods. 
 
-    \begin{figure}[h!]
-        \centering
-        {\includegraphics[scale=0.9]{imgs/LoRA.png}}
-        \caption{schematic architecture of LoRa \cite{hu2021lora}}
-        \label{fig:LoRA}
-    \end{figure}
-    
-    \item \textbf{Empirical results}
-    
-    It turns out that LoRA performs similarly or even outperforms other methods compared in the paper, while having comparable or lower number of trainable parameters.
-    For example comparing full finetuning of GPT-3 model with LoRA finetuning of the same model, the number of trainable parameters was reduced 10000 times and GPU memory requirement was reduced 3 times.
-    
-    Authors of the paper also noted that surprisingly low rank (as low as 1) is already yielding good results.
-    
-    \item \textbf{LoRA benefits}
-    
-    \begin{itemize}
-        \item having relatively small amount of parameters to train
-        \item not introducing additional latency, unlike e.g. adapter methods
-        \item being able to deploy several specialized models at once, as LoRA reduces memory and computational footprint. LoRA does this by having several trained decomposition matrices for each specialized task while keeping the weights for the base model fixed.
-    \end{itemize}
-\end{enumerate}
+Moreover, it enables the deployment of multiple specialized models simultaneously by reducing memory and computational footprint, achieved through maintaining fixed weights for the base model while having several trained decomposition matrices for each specialized task.
+
+LoRa model is trained with configuration showed in Listing \ref{lst:lora_params}.
+
+\begin{lstlisting}[language=Python, caption={LoRa parameters}, label={lst:lora_params}]
+lora_config = LoraConfig(
+        r=16,
+        lora_alpha=32,
+        lora_dropout=0.1,
+        bias="lora_only",
+        task_type="SEQ_CLS"
+)
+\end{lstlisting}

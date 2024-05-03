@@ -1,0 +1,26 @@
+\paragraph{Slovene SuperGLUE} While most of the research in the field of NLP has been conducted for the English language, we also aim at applying the PEFT methods to multilingual text reasoning. The benchmark used is the Slovene SuperGLUE \cite{robnik2022superglue}, which is the Slovene version of the English SuperGLUE. The benchmark consists of eight tasks encompassing general NLP tasks. Let us begin with the task BoolQ: a dataset with questions and binary answers \footnote{\url{https://huggingface.co/datasets/google/boolq}}. Each instance consists of three components: a question, a passage, and an answer, with the possibility of including the page title as supplementary context. This configuration mirrors the structure of typical natural language inference tasks focused on text pairs.
+
+We employed the BERTić \cite{ljubesic2021bertic} model for fine-tuning, which is a transformer language model specifically designed for Bosnian, Croatian, Montenegrin, and Serbian. BERTić has been trained on large corpora in these languages and has shown effectiveness in various NLP tasks in the region.
+
+\begin{table}[htbp]
+  \centering
+  \label{tab:comparison}
+  \resizebox{\columnwidth}{!}{%
+    \begin{tabular}{@{}llll@{}}
+    \toprule
+    \textbf{Metric} & \textbf{FFT} & \textbf{LoRA} & \textbf{Unit} \\ \midrule
+    Training Time & 3967.46 & 3276.88 & seconds \\
+    RAM Usage & 760.78 & 458.01 & MB \\
+    Num. Parameters & 110,618,882 & 1,200,386 & - \\
+    Accuracy & 0.74 & 0.65 & - \\
+    Precision & 0.78 & 0.71 & - \\
+    F1-Score & 0.79 & 0.73 & - \\
+    Recall & 0.81 & 0.75 & - \\
+    \bottomrule
+    \end{tabular}}
+    \caption{Comparison of Full Fine Tuning (FFT) vs. LoRA }
+\end{table}
+
+When comparing the full fine-tuning (FFT) method with the LoRA method on the Slovene SuperGLUE task, several important observations can be made. Firstly, LoRA exhibits notable computational advantages in terms of training time and memory usage, which suggests its potential for efficient model training, especially in resource-constrained environments. However, the reduction in trainable parameters with LoRA might imply a trade-off in model complexity and potentially performance. The higher number of parameters in FFT indicates a more complex model, which can capture finer nuances in the data, potentially leading to better performance metrics such as accuracy, precision, F1-score, and recall. The discrepancy in performance between FFT and LoRA underscores the importance of considering not only computational efficiency but also model capacity and task-specific requirements when selecting a fine-tuning method. 
+
+While LoRA may offer computational advantages, FFT's superior performance on this particular Slovene task suggests that a balance between computational efficiency and model complexity is crucial for achieving optimal results in NLP tasks.

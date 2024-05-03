@@ -22,7 +22,7 @@
 \usepackage[english]{babel}
 \usepackage{xcolor}
 \usepackage{tabularx}
-
+\usepackage{listings}
 
 \graphicspath{{fig/}}
 
@@ -85,11 +85,45 @@
 \section*{Methods}
 \input{content/3_0_methods}
 %------------------------------------------------
+% \section*{Model}
+% Recommendation by Tutor: multilingual DeBERTA v3, sloBERTA, BERTIC (all Balkan languages), CROSLOBERTA
+% Baseline: normal fine-tuning
+% q Lora (half of the bits than LORA)
+
+% other benchmarks: XGLUE (but our benchmarks should be fine)
+
+% adapters
+% - have one NN
+% - have multiple adapters for each task
+% - is implemented already
+
+% next steps:
+% - take slvoenian dataset
+% - choose model
+% - implement fine-tuning
+% - use libraries if available
+
+% until next time:
+% - have three methods and finetuning impelemnted
+% - for slovenian dataset
+% %------------------------------------------------
+\section*{Training Pipeline}
+\input{content/4_training_pipeline}
+%------------------------------------------------
+\section*{Environment and reproducibility}
+\input{content/4_2_envionment_and_reproducibility}
+%------------------------------------------------
 \section*{Results}
-\input{content/4_results}
+\input{content/5_0_results}
+%------------------------------------------------
+\section*{Future directions, ideas}
+\input{content/7_future_directions}
 %------------------------------------------------
 \section*{Discussion}
-\input{content/5_discussion}
+\input{content/6_discussion}
+%------------------------------------------------
+% \section*{Backup}
+% \input{content/backup}
 %----------------------------------------------------------------------------------------
 %	REFERENCE LIST
 %----------------------------------------------------------------------------------------
