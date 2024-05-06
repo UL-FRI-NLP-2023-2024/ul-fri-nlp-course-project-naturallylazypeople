@@ -4,6 +4,9 @@ class DatasetBase:
     def get_dataset(self, num_data_points):
         raise NotImplementedError
 
+    def get_dataset_task_description(self):
+        raise NotImplementedError
+
     def get_dataset_huggingface(self, num_data_points, huggingface_path):
         dataset = load_dataset(huggingface_path)
 

@@ -14,8 +14,9 @@ import transformers
 from transformers import AutoTokenizer, AutoModelForSequenceClassification, TrainingArguments
 from trainers.trainer_base import TrainerBase
 from trainers.trainer_lora import LoRaTrainer
+from trainers.trainer_soft_prompts import SoftPromptsTrainer
 
-from peft import LoraConfig
+from peft import LoraConfig, TaskType
 
 import torch
 
@@ -23,7 +24,7 @@ import torch
 
 #TODO all: change checkpoint  # microsoft/deberta-v2  # microsoft/deberta-v2-xlarge # classla/bcms-bertic
 model_checkpoint = "microsoft/deberta-v3-base"
-batch_size = 32
+batch_size = 64
 
 # depending on the task, select suitable model
 model_type = AutoModelForSequenceClassification
@@ -151,8 +152,26 @@ trainer_lora = LoRaTrainer(
     lora_config=lora_config
 )
 
+soft_prompts_path = f"output/models/{model_name}-{data}-soft-prompts"
+soft_prompts_trainer = SoftPromptsTrainer(
+    model=model,
+    args=args,
+    train_dataset=train_dataset,
+    eval_dataset=val_dataset,
+    test_dataset=test_dataset,
+    trainer_name='soft_prompts',
+    model_name=model_name,
+    task_name=data,
+    model_path=soft_prompts_path,
+    tokenizer=model_checkpoint,
+    initial_text=dataset.get_dataset_task_description(),
+    num_tokens=20,
+    task_type=TaskType.SEQ_CLS
+)
+
 # create list of all trainers that we want to compare against each other
-trainers = [trainer_fft, trainer_lora]
+# trainers = [trainer_fft, trainer_lora, soft_prompts_trainer]
+trainers = [soft_prompts_trainer]
 ### ------------ train and evaluate the model ------------- ###
 
 evaluator = EvaluatorBase(trainers)

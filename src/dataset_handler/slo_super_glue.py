@@ -44,6 +44,9 @@ class SLOSuperGlueDataset(DatasetBase):
             'val': Dataset.from_pandas(eval_df),
             'test': Dataset.from_pandas(test_df)
         })
+    
+    def get_dataset_task_description(self):
+        return "Ali je naslednja trditev resnična:"
 
     def preprocess_text(self, text):
         # Clean and normalize text
