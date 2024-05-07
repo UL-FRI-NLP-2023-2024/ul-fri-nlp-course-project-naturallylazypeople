@@ -12,11 +12,13 @@ from evaluator.evaluator_base import EvaluatorBase
 
 import transformers
 from transformers import AutoTokenizer, AutoModelForSequenceClassification, TrainingArguments
+
 from trainers.trainer_base import TrainerBase
 from trainers.trainer_lora import LoRaTrainer
 from trainers.trainer_soft_prompts import SoftPromptsTrainer
+from trainers.trainer_ia3 import IA3Trainer
 
-from peft import LoraConfig, TaskType
+from peft import TaskType
 
 import torch
 
@@ -130,15 +132,7 @@ trainer_fft = TrainerBase(
 
 # LoRA trainer
 lora_path = f"output/models/{model_name}-{data}-lora"
-lora_config = LoraConfig(  # so far hardcoded
-        r=16,
-        lora_alpha=32,  # rule of thumb alpha = 2*r
-        # target_modules=["q_lin", "k_lin", "v_lin"],  # The modules (for example, attention blocks) to apply the LoRA update matrices.
-        lora_dropout=0.1,
-        bias="lora_only",
-        modules_to_save=None,  # List of modules apart from LoRA layers to be set as trainable and saved in the final checkpoint. These typically include model’s custom head that is randomly initialized for the fine-tuning task.
-        task_type="SEQ_CLS"
-    )
+
 trainer_lora = LoRaTrainer(
     model=model,
     args=args,
@@ -149,7 +143,8 @@ trainer_lora = LoRaTrainer(
     model_name=model_name,
     task_name=data,
     model_path=lora_path,
-    lora_config=lora_config
+    task_type=TaskType.SEQ_CLS
+
 )
 
 soft_prompts_path = f"output/models/{model_name}-{data}-soft-prompts"
@@ -169,9 +164,23 @@ soft_prompts_trainer = SoftPromptsTrainer(
     task_type=TaskType.SEQ_CLS
 )
 
+ia3_path = f"output/models/{model_name}-{data}-ia3"
+ia3_trainer = IA3Trainer(
+    model=model,
+    args=args,
+    train_dataset=train_dataset,
+    eval_dataset=val_dataset,
+    test_dataset=test_dataset,
+    trainer_name='ia3',
+    model_name=model_name,
+    task_name=data,
+    model_path=ia3_path,
+    task_type=TaskType.SEQ_CLS
+)
+
 # create list of all trainers that we want to compare against each other
 # trainers = [trainer_fft, trainer_lora, soft_prompts_trainer]
-trainers = [soft_prompts_trainer]
+trainers = [trainer_fft, trainer_lora, soft_prompts_trainer, ia3_trainer]
 ### ------------ train and evaluate the model ------------- ###
 
 evaluator = EvaluatorBase(trainers)
