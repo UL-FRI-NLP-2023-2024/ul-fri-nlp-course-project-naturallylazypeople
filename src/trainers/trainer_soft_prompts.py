@@ -19,7 +19,6 @@ class SoftPromptsTrainer(TrainerBase):
             tokenizer_name_or_path=tokenizer,
         ) 
 
-
         model = get_peft_model(model, soft_prompts_config)
 
         kwargs["model"] = model

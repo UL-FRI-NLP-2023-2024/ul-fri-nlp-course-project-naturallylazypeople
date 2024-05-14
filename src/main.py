@@ -17,6 +17,7 @@ from trainers.trainer_base import TrainerBase
 from trainers.trainer_lora import LoRaTrainer
 from trainers.trainer_soft_prompts import SoftPromptsTrainer
 from trainers.trainer_ia3 import IA3Trainer
+from trainers.trainer_bitfit import BitFitTrainer
 
 from peft import TaskType
 
@@ -178,9 +179,23 @@ ia3_trainer = IA3Trainer(
     task_type=TaskType.SEQ_CLS
 )
 
+bitfit_path = f"output/models/{model_name}-{data}-bitfit"
+bitfit_trainer = BitFitTrainer(
+    model=model,
+    args=args,
+    train_dataset=train_dataset,
+    eval_dataset=val_dataset,
+    test_dataset=test_dataset,
+    trainer_name='bitfit',
+    model_name=model_name,
+    task_name=data,
+    model_path=bitfit_path
+)
+
+
 # create list of all trainers that we want to compare against each other
 # trainers = [trainer_fft, trainer_lora, soft_prompts_trainer]
-trainers = [trainer_fft, trainer_lora, soft_prompts_trainer, ia3_trainer]
+trainers = [trainer_fft, trainer_lora, soft_prompts_trainer, ia3_trainer, bitfit_trainer]
 ### ------------ train and evaluate the model ------------- ###
 
 evaluator = EvaluatorBase(trainers)
