@@ -11,7 +11,7 @@ class XSumDataset(DatasetBase):
         pass
 
     def get_dataset(self, num_data_points: int = -1):
-        return self.get_dataset_huggingface(self, num_data_points, 'GEM/xsum')
+        return self.get_dataset_huggingface(num_data_points, 'GEM/xsum')
 
     def get_prepcoress_function(self, tokenizer):
         assert isinstance(tokenizer, transformers.PreTrainedTokenizerFast)

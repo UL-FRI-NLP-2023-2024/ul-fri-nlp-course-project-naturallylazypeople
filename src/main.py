@@ -7,6 +7,7 @@ from dataset_handler.datasets_base import DatasetBase
 from dataset_handler.slo_super_glue import SLOSuperGlueDataset
 from dataset_handler.xsum import XSumDataset
 from dataset_handler.commonsense_qa import CommonsenseQA
+from dataset_handler.coreference import CoNLLDataset
 
 from evaluator.evaluator_base import EvaluatorBase
 
@@ -53,11 +54,12 @@ if data == 'slo_superglue':
 
     dataset: DatasetBase = SLOSuperGlueDataset(
         superglue_data_path, 'BoolQ')
-elif data == 'commensense':
-    dataset: DatasetBase = XSumDataset()
 elif data == 'xsum':
+    dataset: DatasetBase = XSumDataset()
+elif data == 'commensense':
     dataset: DatasetBase = CommonsenseQA()
-
+elif data == 'coreference':
+    dataset: DatasetBase = CoNLLDataset()
 else:
     raise RuntimeError(f"Dataset {data} is not supported")
 

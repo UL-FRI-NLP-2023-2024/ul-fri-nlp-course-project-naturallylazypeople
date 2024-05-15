@@ -7,8 +7,11 @@ class DatasetBase:
     def get_dataset_task_description(self):
         raise NotImplementedError
 
-    def get_dataset_huggingface(self, num_data_points, huggingface_path):
-        dataset = load_dataset(huggingface_path)
+    def get_dataset_huggingface(self, num_data_points, huggingface_path, config=None):
+        if config is None:
+            dataset = load_dataset(huggingface_path)
+        else:
+            dataset = load_dataset(huggingface_path, config)
 
         train_df = dataset['train']
         test_df = dataset['test']
@@ -20,9 +23,9 @@ class DatasetBase:
             test_df = test_df[:num_data_points]
 
         return DatasetDict({
-            'train': Dataset.from_pandas(train_df),
-            'val': Dataset.from_pandas(eval_df),
-            'test': Dataset.from_pandas(test_df)
+            'train': Dataset.from_dict(train_df),
+            'val': Dataset.from_dict(eval_df),
+            'test': Dataset.from_dict(test_df)
         })
 
     def get_prepcoress_function(self, tokenizer):
