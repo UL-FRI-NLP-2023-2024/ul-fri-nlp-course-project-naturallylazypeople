@@ -114,6 +114,16 @@ args = TrainingArguments(
     num_train_epochs=20,
     weight_decay=0.01,
 )
+args_peft = TrainingArguments(
+    output_dir=model_path,
+    evaluation_strategy="epoch",
+    learning_rate=2e-5,
+    per_device_train_batch_size=batch_size*2,
+    per_device_eval_batch_size=batch_size*2,
+    auto_find_batch_size=True,
+    num_train_epochs=20,
+    weight_decay=0.01,
+)
 
 ### ------------------- define trainers ------------------- ###
 
@@ -136,7 +146,7 @@ lora_path = f"output/models/{model_name}-{data}-lora"
 
 trainer_lora = LoRaTrainer(
     model=model,
-    args=args,
+    args=args_peft,
     train_dataset=train_dataset,
     eval_dataset=val_dataset,
     test_dataset=test_dataset,
@@ -151,7 +161,7 @@ trainer_lora = LoRaTrainer(
 soft_prompts_path = f"output/models/{model_name}-{data}-soft-prompts"
 soft_prompts_trainer = SoftPromptsTrainer(
     model=model,
-    args=args,
+    args=args_peft,
     train_dataset=train_dataset,
     eval_dataset=val_dataset,
     test_dataset=test_dataset,
@@ -168,7 +178,7 @@ soft_prompts_trainer = SoftPromptsTrainer(
 ia3_path = f"output/models/{model_name}-{data}-ia3"
 ia3_trainer = IA3Trainer(
     model=model,
-    args=args,
+    args=args_peft,
     train_dataset=train_dataset,
     eval_dataset=val_dataset,
     test_dataset=test_dataset,
@@ -182,7 +192,7 @@ ia3_trainer = IA3Trainer(
 bitfit_path = f"output/models/{model_name}-{data}-bitfit"
 bitfit_trainer = BitFitTrainer(
     model=model,
-    args=args,
+    args=args_peft,
     train_dataset=train_dataset,
     eval_dataset=val_dataset,
     test_dataset=test_dataset,
@@ -191,7 +201,6 @@ bitfit_trainer = BitFitTrainer(
     task_name=data,
     model_path=bitfit_path
 )
-
 
 # create list of all trainers that we want to compare against each other
 # trainers = [trainer_fft, trainer_lora, soft_prompts_trainer]
