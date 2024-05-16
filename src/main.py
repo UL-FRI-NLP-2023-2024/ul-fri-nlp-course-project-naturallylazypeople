@@ -28,7 +28,7 @@ import torch
 
 #TODO all: change checkpoint  # microsoft/deberta-v2  # microsoft/deberta-v2-xlarge # classla/bcms-bertic
 model_checkpoint = "microsoft/deberta-v3-base"
-batch_size = 64
+batch_size = 64  # 10
 
 # depending on the task, select suitable model
 model_type = AutoModelForSequenceClassification
@@ -38,9 +38,9 @@ train_model = True
 save_model = True
 
 # dataset: choose between 'slo_superglue', 'xsum', 'commensense'
-data = 'slo_superglue'
+data = 'xsum'
 # if you only want to train on subset of data, specify here
-num_data_points = -1  # else -1
+num_data_points = -1  # else -1  # 20
 
 ### --------------------- load dataset --------------------- ###
 

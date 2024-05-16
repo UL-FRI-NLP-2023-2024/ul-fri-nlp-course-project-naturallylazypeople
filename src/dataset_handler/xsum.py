@@ -13,24 +13,27 @@ class XSumDataset(DatasetBase):
     def get_dataset(self, num_data_points: int = -1):
         return self.get_dataset_huggingface(num_data_points, 'GEM/xsum')
 
+    def get_dataset_task_description(self):
+        return "Summarize the following text: "
+
     def get_prepcoress_function(self, tokenizer):
         assert isinstance(tokenizer, transformers.PreTrainedTokenizerFast)
 
-        max_length = 384
-        doc_stride = 128
+        max_length = 2048  # TODO: find correct values for tokenizer
+        doc_stride = 512
 
         def preprocess_function(examples):
             # print(examples.keys())
             # Clean questions and passages (or context)
-            cleaned_questions = [clean_text(q).lstrip()
-                                 for q in examples["question"]]
-            cleaned_passages = [clean_text(p) for p in examples["passage"]]
+            cleaned_documents = [clean_text(doc).lstrip()
+                                 for doc in examples["document"]]
+            # cleaned_summary = [clean_text(s) for s in examples["target"]]
 
             # Tokenize the cleaned inputs
             tokenized_examples = tokenizer(
-                cleaned_questions,
-                cleaned_passages,
-                truncation="only_second",  # Assuming passage comes after question
+                cleaned_documents,
+                # cleaned_summary,
+                # truncation="only_second",  # Assuming passage comes after question
                 max_length=max_length,
                 stride=doc_stride,
                 return_overflowing_tokens=True,
@@ -51,8 +54,7 @@ class XSumDataset(DatasetBase):
 
             for i, _ in enumerate(offset_mapping):
                 # We will use 1 for True and 0 for False
-                label = 1 if examples["label"][sample_mapping[i]
-                                               ] == "True" else 0
+                label = examples["target"][sample_mapping[i]]
                 tokenized_examples["labels"].append(label)
 
             return tokenized_examples
