@@ -12,7 +12,7 @@ from dataset_handler.coreference import CoNLLDataset
 from evaluator.evaluator_base import EvaluatorBase
 
 import transformers
-from transformers import AutoTokenizer, AutoModelForSequenceClassification, TrainingArguments
+from transformers import AutoTokenizer, TrainingArguments, DataCollatorForTokenClassification
 
 from trainers.trainer_base import TrainerBase
 from trainers.trainer_lora import LoRaTrainer
@@ -30,15 +30,12 @@ import torch
 model_checkpoint = "microsoft/deberta-v3-base"
 batch_size = 64
 
-# depending on the task, select suitable model
-model_type = AutoModelForSequenceClassification
-
 # set whether model should be saved
 train_model = True
 save_model = True
 
-# dataset: choose between 'slo_superglue', 'xsum', 'commensense'
-data = 'slo_superglue'
+# dataset: choose between 'slo_superglue', 'xsum', 'commensense', 'coreference'
+data = 'coreference'
 # if you only want to train on subset of data, specify here
 num_data_points = -1  # else -1
 
@@ -63,8 +60,11 @@ elif data == 'coreference':
 else:
     raise RuntimeError(f"Dataset {data} is not supported")
 
-
 dataset_data = dataset.get_dataset(num_data_points)
+
+# depending on the task, load the correct modeltype
+model_type = dataset.get_model_type()
+
 
 ### ------------- load pre-trained tokenizer ------------- ###
 
@@ -83,7 +83,7 @@ train_dataset = dataset_data['train'].map(
     batched=True,
     remove_columns=dataset_data["train"].column_names)
 # validation dataset
-val_dataset = dataset_data['val'].map(
+val_dataset = dataset_data['validation'].map(
     preprocess_function,
     batched=True,
     remove_columns=dataset_data["train"].column_names)

@@ -3,6 +3,7 @@ import os
 import pandas as pd
 from datasets import Dataset, DatasetDict
 import transformers
+from transformers import AutoModelForSequenceClassification, PreTrainedTokenizerFast
 from utils.utils import clean_text
 import stanza
 import nltk
@@ -29,6 +30,9 @@ class SLOSuperGlueDataset(DatasetBase):
         self.stop_words = set(stopwords.words('slovene'))
         self.nlp = stanza.Pipeline("sl")
 
+    def get_model_type(self):
+        return AutoModelForSequenceClassification
+
     def get_dataset(self, num_data_points: int = -1):
         train_df = pd.read_csv(f"{self.path}/train.csv")
         eval_df = pd.read_csv(f"{self.path}/val.csv")
@@ -41,7 +45,7 @@ class SLOSuperGlueDataset(DatasetBase):
 
         return DatasetDict({
             'train': Dataset.from_pandas(train_df),
-            'val': Dataset.from_pandas(eval_df),
+            'validation': Dataset.from_pandas(eval_df),
             'test': Dataset.from_pandas(test_df)
         })
     
@@ -60,7 +64,7 @@ class SLOSuperGlueDataset(DatasetBase):
         return ' '.join(lemmatized_tokens)
 
     def get_prepcoress_function(self, tokenizer):
-        assert isinstance(tokenizer, transformers.PreTrainedTokenizerFast)
+        assert isinstance(tokenizer, PreTrainedTokenizerFast)
 
         max_length = 384
         doc_stride = 128
