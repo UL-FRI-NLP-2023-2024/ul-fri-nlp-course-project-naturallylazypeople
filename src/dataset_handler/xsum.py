@@ -26,17 +26,23 @@ class XSumDataset(DatasetBase):
             # Clean questions and passages (or context)
             cleaned_documents = [clean_text(doc).lstrip()
                                  for doc in examples["document"]]
+            cleaned_targets = [clean_text(doc).lstrip()
+                                 for doc in examples["target"]]
 
             # Tokenize the cleaned inputs
             tokenized_examples = tokenizer(
                 cleaned_documents,
-                # max_length=max_length,
-                # stride=doc_stride,
                 return_overflowing_tokens=True,
                 return_offsets_mapping=True,
                 padding="longest",
             )
 
+            tokenized_targets = tokenizer(
+                cleaned_targets,
+                # return_overflowing_tokens=True,
+                # return_offsets_mapping=True,
+                padding="longest",
+            )
             # Since one example might give us several features if it has a long context, we need a map from a feature to
             # its corresponding example. This key gives us just that.
             sample_mapping = tokenized_examples.pop(
@@ -50,9 +56,12 @@ class XSumDataset(DatasetBase):
 
             for i, _ in enumerate(offset_mapping):
                 # We will use 1 for True and 0 for False
-                label = examples["target"][sample_mapping[i]]
+                # label = examples["target"][sample_mapping[i]]
+                # label = {"input_ids": tokenized_targets["input_ids"][sample_mapping[i]],
+                #          "token_type_ids": tokenized_targets["token_type_ids"][sample_mapping[i]],
+                #          "attention_mask": tokenized_targets["attention_mask"][sample_mapping[i]]}
+                label = tokenized_targets["input_ids"][sample_mapping[i]]
                 tokenized_examples["labels"].append(label)
-
             return tokenized_examples
 
         return preprocess_function
