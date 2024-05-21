@@ -80,17 +80,14 @@ preprocess_function = dataset.get_prepcoress_function(tokenizer)
 # train dataset
 train_dataset = dataset_data['train'].map(
     preprocess_function,
-    batched=True,
     remove_columns=dataset_data["train"].column_names)
 # validation dataset
 val_dataset = dataset_data['validation'].map(
     preprocess_function,
-    batched=True,
     remove_columns=dataset_data["train"].column_names)
 # test dataset
 test_dataset = dataset_data['test'].map(
     preprocess_function,
-    batched=True,
     remove_columns=[c for c in dataset_data["train"].column_names if c != 'label'])
 
 # set format of data to PyTorch tensors

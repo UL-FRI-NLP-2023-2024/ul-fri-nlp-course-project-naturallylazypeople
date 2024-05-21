@@ -13,19 +13,16 @@ class CommonsenseQA(DatasetBase):
     def get_model_type(self):
         return transformers.AutoModelForMultipleChoice 
 
+    def get_dataset_task_description(self):
+        return "Choose the correct answer to the question."
+
     def get_dataset(self, num_data_points: int = -1):
         if num_data_points == -1:
-            dataset = load_dataset("commonsense_qa")
-            return DatasetDict({
-                'train': dataset['train'],
-                'val': dataset['validation'],
-                'test': dataset['test']
-            })
-
+            return load_dataset("commonsense_qa")
         else:
             dataset = load_dataset("commonsense_qa")
             dataset["train"] = dataset["train"].select(range(num_data_points))
-            dataset["val"] = dataset["validation"].select(
+            dataset["validation"] = dataset["validation"].select(
                 range(num_data_points))
             dataset["test"] = dataset["test"].select(range(num_data_points))
             return dataset
