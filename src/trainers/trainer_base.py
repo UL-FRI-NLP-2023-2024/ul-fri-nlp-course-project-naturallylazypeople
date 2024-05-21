@@ -14,15 +14,19 @@ class TrainerBase(Trainer):
     def compute_metrics(self, eval_pred):
         logits, labels = eval_pred
         predictions = np.argmax(logits, axis=-1)
+
+        predictions = predictions.flatten()
+        labels = labels.flatten()
+        logits = logits.flatten()
         
         accuracy = evaluate.load("accuracy").compute(
             predictions=predictions, references=labels)
         f1 = evaluate.load("f1").compute(
-            predictions=predictions, references=labels)
+            predictions=predictions, references=labels, average="weighted")
         precision = evaluate.load("precision").compute(
-            predictions=predictions, references=labels)
+            predictions=predictions, references=labels, average="weighted")
         recall = evaluate.load("recall").compute(
-            predictions=predictions, references=labels)
+            predictions=predictions, references=labels, average="weighted")
         # bleu = evaluate.load("bleu").compute(
         #     predictions=predictions, references=labels)
         # rouge = evaluate.load("rouge").compute(

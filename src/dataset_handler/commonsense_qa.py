@@ -1,61 +1,87 @@
 from dataset_handler.datasets_base import DatasetBase
-from datasets import load_dataset, Dataset, DatasetDict
-import os
-import pandas as pd
+from datasets import load_dataset, DatasetDict
 from utils.utils import clean_text
 import transformers
+import torch
+
 
 
 class CommonsenseQA(DatasetBase):
     def __init__(self) -> None:
         pass
 
+    def get_model_type(self):
+        return transformers.AutoModelForMultipleChoice 
+
+    def get_dataset_task_description(self):
+        return "Choose the correct answer to the question."
+
     def get_dataset(self, num_data_points: int = -1):
-        return self.get_dataset_huggingface(num_data_points, 'commonsense_qa')
-    
+        if num_data_points == -1:
+            return load_dataset("commonsense_qa")
+        else:
+            dataset = load_dataset("commonsense_qa")
+            dataset["train"] = dataset["train"].select(range(num_data_points))
+            dataset["validation"] = dataset["validation"].select(
+                range(num_data_points))
+            dataset["test"] = dataset["test"].select(range(num_data_points))
+            return dataset
+
     def get_prepcoress_function(self, tokenizer):
         assert isinstance(tokenizer, transformers.PreTrainedTokenizerFast)
 
-        max_length = 384
-        doc_stride = 128
+        MAX_LEN = 384
+        label_map = {"A": 0, "B": 1, "C": 2, "D": 3, "E": 4}
 
-        def preprocess_function(examples):
-            # print(examples.keys())
-            # Clean questions and passages (or context)
-            cleaned_questions = [clean_text(q).lstrip()
-                                 for q in examples["question"]]
-            cleaned_passages = [clean_text(p) for p in examples["passage"]]
+        def preprocess_function(x):
+            clean_question = clean_text(x["question"])
+            choices = x["choices"]["text"]
+            choice_features = []
+            for i, choice in enumerate(choices):
+                choices[i] = clean_text(choice)
 
-            # Tokenize the cleaned inputs
-            tokenized_examples = tokenizer(
-                cleaned_questions,
-                cleaned_passages,
-                truncation="only_second",  # Assuming passage comes after question
-                max_length=max_length,
-                stride=doc_stride,
-                return_overflowing_tokens=True,
-                return_offsets_mapping=True,
-                padding="max_length",
-            )
+                inputs = tokenizer(
+                    clean_question,
+                    choices[i],
+                    add_special_tokens=True,
+                    max_length=MAX_LEN,
+                    padding="max_length",
+                    truncation=True,
+                )
 
-            # Since one example might give us several features if it has a long context, we need a map from a feature to
-            # its corresponding example. This key gives us just that.
-            sample_mapping = tokenized_examples.pop(
-                "overflow_to_sample_mapping")
-            # The offset mappings will give us a map from token to character position in the original context. This will
-            # help us compute the start_positions and end_positions.
-            offset_mapping = tokenized_examples.pop("offset_mapping")
-            
-            if 'label' in tokenized_examples.keys():
-                # Let's label those examples!
-                tokenized_examples["labels"] = []
+                input_ids = inputs["input_ids"]
+                token_type_ids = inputs["token_type_ids"]
+                attention_mask = inputs["attention_mask"]
 
-                for i, _ in enumerate(offset_mapping):
-                    # We will use 1 for True and 0 for False
-                    label = 1 if examples["label"][sample_mapping[i]
-                                                ] == "True" else 0
-                    tokenized_examples["labels"].append(label)
+                pad_token_id = tokenizer.pad_token_id
+                padding_length = MAX_LEN - len(input_ids)
+                input_ids = input_ids + ([pad_token_id] * padding_length)
+                attention_mask = attention_mask + ([0] * padding_length)
+                token_type_ids = token_type_ids + \
+                    ([pad_token_id] * padding_length)
 
-            return tokenized_examples
+                assert len(input_ids) == MAX_LEN, "Error with input length {} vs {}".format(
+                    len(input_ids), MAX_LEN)
+                assert len(attention_mask) == MAX_LEN, "Error with input length {} vs {}".format(
+                    len(attention_mask), MAX_LEN)
+                assert len(token_type_ids) == MAX_LEN, "Error with input length {} vs {}".format(
+                    len(token_type_ids), MAX_LEN)
+
+                choice_features.append({
+                    "input_ids": input_ids,
+                    "attention_mask": attention_mask,
+                    "token_type_ids": token_type_ids,
+                })
+
+            label = label_map.get(x["answerKey"], -1)
+            label = torch.tensor(label).long()
+
+            return {
+                "id": x["id"],
+                "label": label,
+                "input_ids": torch.tensor([cf["input_ids"] for cf in choice_features]),
+                "attention_mask": torch.tensor([cf["attention_mask"] for cf in choice_features]),
+                "token_type_ids": torch.tensor([cf["token_type_ids"] for cf in choice_features]),
+            }
 
         return preprocess_function
