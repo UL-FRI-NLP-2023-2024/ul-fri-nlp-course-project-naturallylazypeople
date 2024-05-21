@@ -19,26 +19,22 @@ class XSumDataset(DatasetBase):
     def get_prepcoress_function(self, tokenizer):
         assert isinstance(tokenizer, transformers.PreTrainedTokenizerFast)
 
-        max_length = 2048  # TODO: find correct values for tokenizer
+        # max_length = 2048  # TODO: find correct values for tokenizer
         doc_stride = 512
 
         def preprocess_function(examples):
-            # print(examples.keys())
             # Clean questions and passages (or context)
             cleaned_documents = [clean_text(doc).lstrip()
                                  for doc in examples["document"]]
-            # cleaned_summary = [clean_text(s) for s in examples["target"]]
 
             # Tokenize the cleaned inputs
             tokenized_examples = tokenizer(
                 cleaned_documents,
-                # cleaned_summary,
-                # truncation="only_second",  # Assuming passage comes after question
-                max_length=max_length,
-                stride=doc_stride,
+                # max_length=max_length,
+                # stride=doc_stride,
                 return_overflowing_tokens=True,
                 return_offsets_mapping=True,
-                padding="max_length",
+                padding="longest",
             )
 
             # Since one example might give us several features if it has a long context, we need a map from a feature to
