@@ -35,7 +35,7 @@ train_model = True
 save_model = True
 
 # dataset: choose between 'slo_superglue', 'xsum', 'commensense', 'coreference'
-data = 'coreference'
+data = 'commonsense'
 # if you only want to train on subset of data, specify here
 num_data_points = -1  # else -1
 
@@ -53,7 +53,7 @@ if data == 'slo_superglue':
         superglue_data_path, 'BoolQ')
 elif data == 'xsum':
     dataset: DatasetBase = XSumDataset()
-elif data == 'commensense':
+elif data == 'commonsense':
     dataset: DatasetBase = CommonsenseQA()
 elif data == 'coreference':
     dataset: DatasetBase = CoNLLDataset()
