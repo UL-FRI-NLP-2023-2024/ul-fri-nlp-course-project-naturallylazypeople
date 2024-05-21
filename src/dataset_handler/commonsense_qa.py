@@ -5,9 +5,13 @@ import transformers
 import torch
 
 
+
 class CommonsenseQA(DatasetBase):
     def __init__(self) -> None:
         pass
+
+    def get_model_type(self):
+        return transformers.AutoModelForMultipleChoice 
 
     def get_dataset(self, num_data_points: int = -1):
         if num_data_points == -1:
