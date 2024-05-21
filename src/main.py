@@ -35,7 +35,7 @@ train_model = True
 save_model = True
 
 # dataset: choose between 'slo_superglue', 'xsum', 'commensense', 'coreference'
-data = 'coreference'
+data = 'commonsense'
 # if you only want to train on subset of data, specify here
 num_data_points = -1  # else -1
 
@@ -73,7 +73,7 @@ tokenizer = AutoTokenizer.from_pretrained(model_checkpoint)
 assert isinstance(tokenizer, transformers.PreTrainedTokenizerFast)
 
 # load preprocess function
-preprocess_function = dataset.get_prepcoress_function(tokenizer)
+preprocess_function = dataset.get_preprocess_function(tokenizer)
 
 ### ------------------ pre-process data ------------------ ###
 

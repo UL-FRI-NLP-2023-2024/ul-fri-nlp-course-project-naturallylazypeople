@@ -36,7 +36,7 @@ class CoNLLDataset(DatasetBase):
         # Join tokens back into text
         return ' '.join(tokens)
 
-    def get_prepcoress_function(self, tokenizer: PreTrainedTokenizerFast):
+    def get_preprocess_function(self, tokenizer: PreTrainedTokenizerFast):
         assert isinstance(tokenizer, PreTrainedTokenizerFast)
 
         max_length = 384

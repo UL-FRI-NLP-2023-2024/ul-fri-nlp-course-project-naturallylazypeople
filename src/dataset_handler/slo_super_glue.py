@@ -63,7 +63,7 @@ class SLOSuperGlueDataset(DatasetBase):
         # Join tokens back into text
         return ' '.join(lemmatized_tokens)
 
-    def get_prepcoress_function(self, tokenizer):
+    def get_preprocess_function(self, tokenizer):
         assert isinstance(tokenizer, PreTrainedTokenizerFast)
 
         max_length = 384

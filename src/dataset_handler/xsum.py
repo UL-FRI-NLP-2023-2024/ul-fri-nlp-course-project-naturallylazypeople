@@ -13,7 +13,7 @@ class XSumDataset(DatasetBase):
     def get_dataset(self, num_data_points: int = -1):
         return self.get_dataset_huggingface(num_data_points, 'GEM/xsum')
 
-    def get_prepcoress_function(self, tokenizer):
+    def get_preprocess_function(self, tokenizer):
         assert isinstance(tokenizer, transformers.PreTrainedTokenizerFast)
 
         max_length = 384
