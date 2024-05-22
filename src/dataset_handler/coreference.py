@@ -107,7 +107,7 @@ class CoNLLDataset(DatasetBase):
             padding_length = tokenized_inputs['input_ids'].shape[1] - len(aligned_labels)
             aligned_labels = np.pad(aligned_labels, (0, padding_length), mode='constant', constant_values=-100)
             # pad for length of virtual_tokens for soft prompting
-            aligned_labels = np.pad(aligned_labels, (20, 0), mode='constant', constant_values=-100)
+            aligned_labels = np.pad(aligned_labels, (num_virtual_tokens, 0), mode='constant', constant_values=-100)
 
             
             tokenized_inputs['labels'] = torch.tensor(aligned_labels, dtype=torch.int32).unsqueeze(0)  # Convert to tensor and add batch dimension
