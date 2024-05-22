@@ -36,7 +36,7 @@ class CoNLLDataset(DatasetBase):
         # Join tokens back into text
         return ' '.join(tokens)
 
-    def get_preprocess_function(self, tokenizer: PreTrainedTokenizerFast):
+    def get_preprocess_function(self, tokenizer: PreTrainedTokenizerFast, num_virtual_tokens=0):
         assert isinstance(tokenizer, PreTrainedTokenizerFast)
 
         max_length = 384
@@ -46,7 +46,7 @@ class CoNLLDataset(DatasetBase):
             for doc in documents['sentences']:
                 coref_chains = self.extract_coref_chains(doc)
                 tokenized_sentences = self.tokenize_and_align_labels(
-                    doc, coref_chains, tokenizer, max_length=max_length)
+                    doc, coref_chains, tokenizer, max_length=max_length, num_virtual_tokens=num_virtual_tokens)
                 for key, value in tokenized_sentences.items():
                     all_tokenized_sentences[key].extend(value)
 
@@ -69,7 +69,7 @@ class CoNLLDataset(DatasetBase):
             coref_chains.append(chains)
         return coref_chains
     
-    def tokenize_and_align_labels(self, doc, coref_chains, tokenizer, max_length=128):
+    def tokenize_and_align_labels(self, doc, coref_chains, tokenizer, max_length=128, num_virtual_tokens=0):
         tokenized_sentences = defaultdict(list)
         
         for sentence, chains in zip(doc, coref_chains):
