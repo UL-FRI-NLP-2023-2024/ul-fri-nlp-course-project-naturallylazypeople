@@ -100,8 +100,37 @@ test_dataset.set_format("torch")
 
 ### -------------- define training arguments -------------- ###
 
-# load pre-trained model
-model = model_type.from_pretrained(model_checkpoint)
+num_virtual_tokens = 20
+# load pre-trained mode
+if data == 'coreference':
+    preprocess_function_sp = dataset.get_preprocess_function(tokenizer,num_virtual_tokens)
+
+    # train dataset for soft prompt
+    train_dataset_sp = dataset_data['train'].map(
+        preprocess_function_sp,
+        batched=True,
+        remove_columns=dataset_data["train"].column_names)
+    # validation dataset for soft prompt
+    val_dataset_sp = dataset_data['validation'].map(
+        preprocess_function_sp,
+        batched=True,
+        remove_columns=dataset_data["train"].column_names)
+    # test dataset for soft prompt
+    test_dataset_sp = dataset_data['test'].map(
+        preprocess_function_sp,
+        batched=True,
+        remove_columns=[c for c in dataset_data["train"].column_names if c != 'label'])
+
+    model = model_type.from_pretrained(model_checkpoint, num_labels=42) #TODO: num_labels
+    task_type = TaskType.TOKEN_CLS
+else:
+    model = model_type.from_pretrained(model_checkpoint)
+    task_type = TaskType.SEQ_CLS
+
+    train_dataset_sp = train_dataset
+    val_dataset_sp = val_dataset
+    test_dataset_sp = test_dataset
+
 model_name = model_checkpoint.split("/")[-1]
 model_path = f"output/models/{model_name}"
 
@@ -156,7 +185,7 @@ trainer_lora = LoRaTrainer(
     model_name=model_name,
     task_name=data,
     model_path=lora_path,
-    task_type=TaskType.SEQ_CLS
+    task_type=task_type
 
 )
 
@@ -164,17 +193,17 @@ soft_prompts_path = f"output/models/{model_name}-{data}-soft-prompts"
 soft_prompts_trainer = SoftPromptsTrainer(
     model=model,
     args=args_peft,
-    train_dataset=train_dataset,
-    eval_dataset=val_dataset,
-    test_dataset=test_dataset,
+    train_dataset=train_dataset_sp,
+    eval_dataset=val_dataset_sp,
+    test_dataset=test_dataset_sp,
     trainer_name='soft_prompts',
     model_name=model_name,
     task_name=data,
     model_path=soft_prompts_path,
     tokenizer=model_checkpoint,
     initial_text=dataset.get_dataset_task_description(),
-    num_tokens=20,
-    task_type=TaskType.SEQ_CLS
+    num_tokens=num_virtual_tokens,
+    task_type=task_type,
 )
 
 ia3_path = f"output/models/{model_name}-{data}-ia3"
@@ -188,7 +217,7 @@ ia3_trainer = IA3Trainer(
     model_name=model_name,
     task_name=data,
     model_path=ia3_path,
-    task_type=TaskType.SEQ_CLS
+    task_type=task_type
 )
 
 bitfit_path = f"output/models/{model_name}-{data}-bitfit"
