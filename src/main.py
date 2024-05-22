@@ -100,8 +100,15 @@ test_dataset.set_format("torch")
 
 ### -------------- define training arguments -------------- ###
 
-# load pre-trained model
-model = model_type.from_pretrained(model_checkpoint)
+# load pre-trained mode
+if data == 'coreference':
+    test_dataset = test_dataset.remove_columns('labels')
+    model = model_type.from_pretrained(model_checkpoint, num_labels=42) #TODO: num_labels
+    task_type = TaskType.TOKEN_CLS
+else:
+    model = model_type.from_pretrained(model_checkpoint)
+    task_type = TaskType.SEQ_CLS
+
 model_name = model_checkpoint.split("/")[-1]
 model_path = f"output/models/{model_name}"
 
@@ -156,7 +163,7 @@ trainer_lora = LoRaTrainer(
     model_name=model_name,
     task_name=data,
     model_path=lora_path,
-    task_type=TaskType.SEQ_CLS
+    task_type=task_type
 
 )
 
@@ -174,7 +181,7 @@ soft_prompts_trainer = SoftPromptsTrainer(
     tokenizer=model_checkpoint,
     initial_text=dataset.get_dataset_task_description(),
     num_tokens=20,
-    task_type=TaskType.SEQ_CLS
+    task_type=task_type,
 )
 
 ia3_path = f"output/models/{model_name}-{data}-ia3"
@@ -188,7 +195,7 @@ ia3_trainer = IA3Trainer(
     model_name=model_name,
     task_name=data,
     model_path=ia3_path,
-    task_type=TaskType.SEQ_CLS
+    task_type=task_type
 )
 
 bitfit_path = f"output/models/{model_name}-{data}-bitfit"

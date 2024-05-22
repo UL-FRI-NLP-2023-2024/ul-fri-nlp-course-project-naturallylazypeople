@@ -1,5 +1,5 @@
 from dataset_handler.datasets_base import DatasetBase
-from transformers import AutoModelForTokenClassification, PreTrainedTokenizerFast
+from transformers import AutoModelForTokenClassification, PreTrainedTokenizerFast, AutoModelForSequenceClassification
 from utils.utils import clean_text
 import nltk
 from nltk.corpus import stopwords
@@ -58,9 +58,9 @@ class CoNLLDataset(DatasetBase):
         
         return preprocess_function
 
-    def extract_coref_chains(self, sentences):
+    def extract_coref_chains(self, doc):
         coref_chains = []
-        for sentence in sentences:
+        for sentence in doc:
             coref_spans = sentence.get('coref_spans', [])
             chains = defaultdict(list)
             for span in coref_spans:
@@ -69,9 +69,10 @@ class CoNLLDataset(DatasetBase):
             coref_chains.append(chains)
         return coref_chains
     
-    def tokenize_and_align_labels(self, sentences, coref_chains, tokenizer, max_length=128):
+    def tokenize_and_align_labels(self, doc, coref_chains, tokenizer, max_length=128):
         tokenized_sentences = defaultdict(list)
-        for sentence, chains in zip(sentences, coref_chains):
+        
+        for sentence, chains in zip(doc, coref_chains):
             words = sentence['words']
             labels = [0] * len(words)  # Initialize with 0 (no coreference)
             
@@ -87,14 +88,14 @@ class CoNLLDataset(DatasetBase):
                 truncation=True, 
                 return_tensors='pt', 
                 max_length=max_length)
-            
+
             # Align labels with tokenized inputs
             word_ids = tokenized_inputs.word_ids()
             aligned_labels = []
             current_word = None
             for word_id in word_ids:
                 if word_id is None:
-                    aligned_labels.append(0)  # Special tokens are ignored in the loss function
+                    aligned_labels.append(-100)  # Special tokens are ignored in the loss function
                 elif word_id != current_word:
                     aligned_labels.append(labels[word_id])
                     current_word = word_id
@@ -105,6 +106,9 @@ class CoNLLDataset(DatasetBase):
             aligned_labels = np.array(aligned_labels, dtype=np.int32)
             padding_length = tokenized_inputs['input_ids'].shape[1] - len(aligned_labels)
             aligned_labels = np.pad(aligned_labels, (0, padding_length), mode='constant', constant_values=-100)
+            # pad for length of virtual_tokens for soft prompting
+            aligned_labels = np.pad(aligned_labels, (20, 0), mode='constant', constant_values=-100)
+
             
             tokenized_inputs['labels'] = torch.tensor(aligned_labels, dtype=torch.int32).unsqueeze(0)  # Convert to tensor and add batch dimension
 
@@ -113,8 +117,3 @@ class CoNLLDataset(DatasetBase):
                 tokenized_sentences[key].append(value.squeeze(0).tolist())
         
         return tokenized_sentences
-
-    def convert_to_hf_dataset(self, tokenized_inputs):
-        # Create HuggingFace dataset
-        hf_dataset = datasets.Dataset.from_dict(tokenized_inputs)
-        return hf_dataset
