@@ -37,5 +37,5 @@ class DatasetBase:
         return dataset
 
 
-    def get_prepcoress_function(self, tokenizer):
+    def get_preprocess_function(self, tokenizer):
         raise NotImplementedError
