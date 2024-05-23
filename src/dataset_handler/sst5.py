@@ -50,9 +50,6 @@ class SST5Dataset(DatasetBase):
     def get_preprocess_function(self, tokenizer):
         assert isinstance(tokenizer, PreTrainedTokenizerFast)
 
-        # max_length = 384
-        # doc_stride = 128
-
         def preprocess_function(examples):
             # Clean questions and passages (or context)
             cleaned_questions = [self.preprocess_text(q, tokenizer).lstrip()
@@ -61,10 +58,6 @@ class SST5Dataset(DatasetBase):
             # Tokenize the cleaned inputs
             tokenized_examples = tokenizer(
                 cleaned_questions,
-                # cleaned_passages,
-                # truncation="only_second",  # Assuming passage comes after question
-                # max_length=max_length,
-                # stride=doc_stride,
                 return_overflowing_tokens=True,
                 return_offsets_mapping=True,
                 padding="longest",
