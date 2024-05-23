@@ -31,17 +31,17 @@ import torch
 ### -------------- configure and define data -------------- ###
 
 #TODO all: change checkpoint  # microsoft/deberta-v2  # microsoft/deberta-v2-xlarge # classla/bcms-bertic
-model_checkpoint = "microsoft/deberta-v3-xsmall"# "openai-community/gpt2" # "microsoft/deberta-v3-base"
-batch_size = 1  # 10
+model_checkpoint = "microsoft/deberta-v3-base"
+batch_size = 64
 
 # set whether model should be saved
 train_model = True
 save_model = True
 
-# dataset: choose between 'slo_superglue', 'xsum', 'commonsense', 'coreference', 'sst5'
-data = 'sst5'
+# dataset: choose between 'slo_superglue', 'xsum', 'commensense', 'coreference'
+data = 'commonsense'
 # if you only want to train on subset of data, specify here
-num_data_points = 3 #-1  # else -1  # 20
+num_data_points = -1  # else -1
 
 ### --------------------- load dataset --------------------- ###
 
