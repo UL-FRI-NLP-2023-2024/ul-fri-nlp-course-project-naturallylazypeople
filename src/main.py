@@ -3,9 +3,6 @@
 ### ------------------ import libraries ------------------ ###
 import os
 
-# from huggingface_hub import login
-# login(token='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')
-
 from dataset_handler.datasets_base import DatasetBase
 from dataset_handler.slo_super_glue import SLOSuperGlueDataset
 from dataset_handler.xsum import XSumDataset
@@ -38,7 +35,7 @@ batch_size = 64
 train_model = True
 save_model = True
 
-# dataset: choose between 'slo_superglue', 'xsum', 'commensense', 'coreference'
+# dataset: choose between 'slo_superglue', 'xsum', 'commonsense', 'coreference', 'sst5'
 data = 'commonsense'
 # if you only want to train on subset of data, specify here
 num_data_points = -1  # else -1

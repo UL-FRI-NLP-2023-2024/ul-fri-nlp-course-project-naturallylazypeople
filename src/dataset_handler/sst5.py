@@ -55,12 +55,15 @@ class SST5Dataset(DatasetBase):
             cleaned_questions = [self.preprocess_text(q, tokenizer).lstrip()
                                  for q in examples["text"]]
 
+            max_length = 128
+
             # Tokenize the cleaned inputs
             tokenized_examples = tokenizer(
                 cleaned_questions,
+                max_length=max_length,
                 return_overflowing_tokens=True,
                 return_offsets_mapping=True,
-                padding="longest",
+                padding="max_length",
             )
 
             # Since one example might give us several features if it has a long context, we need a map from a feature to
