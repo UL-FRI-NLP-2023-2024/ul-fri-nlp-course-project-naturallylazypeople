@@ -31,7 +31,7 @@ import torch
 ### -------------- configure and define data -------------- ###
 
 #TODO all: change checkpoint  # microsoft/deberta-v2  # microsoft/deberta-v2-xlarge # classla/bcms-bertic
-model_checkpoint = "microsoft/deberta-v3-base"# "openai-community/gpt2" # "microsoft/deberta-v3-base"
+model_checkpoint = "microsoft/deberta-v3-xsmall"# "openai-community/gpt2" # "microsoft/deberta-v3-base"
 batch_size = 1  # 10
 
 # set whether model should be saved
@@ -39,9 +39,9 @@ train_model = True
 save_model = True
 
 # dataset: choose between 'slo_superglue', 'xsum', 'commonsense', 'coreference', 'sst5'
-data = 'commonsense'
+data = 'sst5'
 # if you only want to train on subset of data, specify here
-num_data_points = 2 #-1  # else -1  # 20
+num_data_points = 3 #-1  # else -1  # 20
 
 ### --------------------- load dataset --------------------- ###
 
@@ -115,6 +115,12 @@ num_labels = None
 if data == 'sst5':
     num_labels = max(max(train_dataset['labels']), max(test_dataset['labels']), max(val_dataset['labels'])) + 1
     model = model_type.from_pretrained(model_checkpoint, trust_remote_code=True, num_labels=num_labels)
+
+    task_type = TaskType.SEQ_CLS
+
+    train_dataset_sp = train_dataset
+    val_dataset_sp = val_dataset
+    test_dataset_sp = test_dataset
 elif data == 'coreference':
     preprocess_function_sp = dataset.get_preprocess_function(tokenizer,num_virtual_tokens)
 
@@ -247,11 +253,9 @@ bitfit_trainer = BitFitTrainer(
 )
 
 # create list of all trainers that we want to compare against each other
-# trainers = [trainer_fft, trainer_lora, soft_prompts_trainer]
 trainers = [trainer_fft, trainer_lora, soft_prompts_trainer, ia3_trainer, bitfit_trainer]
 if data == 'sst5':
-    trainers.remove(soft_prompts_trainer)
-# trainers = [trainer_fft, trainer_lora, ia3_trainer, bitfit_trainer]  
+    trainers.remove(soft_prompts_trainer) 
 # sst5 problematic: soft_prompts_trainer
 # sst5 ok: trainer_lora, trainer_fft, ia3_trainer, bitfit_trainer
 ### ------------ train and evaluate the model ------------- ###

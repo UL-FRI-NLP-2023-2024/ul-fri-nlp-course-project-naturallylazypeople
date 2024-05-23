@@ -47,7 +47,7 @@ class SST5Dataset(DatasetBase):
         # Join tokens back into text
         return ' '.join(tokens)
 
-    def get_prepcoress_function(self, tokenizer):
+    def get_preprocess_function(self, tokenizer):
         assert isinstance(tokenizer, PreTrainedTokenizerFast)
 
         # max_length = 384
