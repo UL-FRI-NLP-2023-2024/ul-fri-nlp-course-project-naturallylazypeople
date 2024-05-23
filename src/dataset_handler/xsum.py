@@ -4,6 +4,7 @@ import os
 import pandas as pd
 from utils.utils import clean_text
 import transformers
+from transformers import AutoModel
 
 
 class XSumDataset(DatasetBase):
@@ -15,6 +16,9 @@ class XSumDataset(DatasetBase):
 
     def get_dataset_task_description(self):
         return "Summarize the following text: "
+    
+    def get_model_type(self):
+        return AutoModel
 
     def get_prepcoress_function(self, tokenizer):
         assert isinstance(tokenizer, transformers.PreTrainedTokenizerFast)

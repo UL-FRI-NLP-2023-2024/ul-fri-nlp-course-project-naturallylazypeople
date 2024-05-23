@@ -3,11 +3,15 @@
 ### ------------------ import libraries ------------------ ###
 import os
 
+# from huggingface_hub import login
+# login(token='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')
+
 from dataset_handler.datasets_base import DatasetBase
 from dataset_handler.slo_super_glue import SLOSuperGlueDataset
 from dataset_handler.xsum import XSumDataset
 from dataset_handler.commonsense_qa import CommonsenseQA
 from dataset_handler.coreference import CoNLLDataset
+from dataset_handler.sst5 import SST5Dataset
 
 from evaluator.evaluator_base import EvaluatorBase
 
@@ -27,17 +31,17 @@ import torch
 ### -------------- configure and define data -------------- ###
 
 #TODO all: change checkpoint  # microsoft/deberta-v2  # microsoft/deberta-v2-xlarge # classla/bcms-bertic
-model_checkpoint = "microsoft/deberta-v3-base"
-batch_size = 64  # 10
+model_checkpoint = "microsoft/deberta-v3-base"# "openai-community/gpt2" # "microsoft/deberta-v3-base"
+batch_size = 1  # 10
 
 # set whether model should be saved
 train_model = True
 save_model = True
 
-# dataset: choose between 'slo_superglue', 'xsum', 'commensense', 'coreference'
-data = 'coreference'
+# dataset: choose between 'slo_superglue', 'xsum', 'commonsense', 'coreference', 'sst5'
+data = 'sst5'
 # if you only want to train on subset of data, specify here
-num_data_points = -1  # else -1  # 20
+num_data_points = 2 #-1  # else -1  # 20
 
 ### --------------------- load dataset --------------------- ###
 
@@ -57,6 +61,8 @@ elif data == 'commonsense':
     dataset: DatasetBase = CommonsenseQA()
 elif data == 'coreference':
     dataset: DatasetBase = CoNLLDataset()
+elif data == 'sst5':
+    dataset: DatasetBase = SST5Dataset()
 else:
     raise RuntimeError(f"Dataset {data} is not supported")
 
@@ -69,8 +75,11 @@ model_type = dataset.get_model_type()
 ### ------------- load pre-trained tokenizer ------------- ###
 
 # Load the pre-trained tokenizer for deberta
-tokenizer = AutoTokenizer.from_pretrained(model_checkpoint)
+tokenizer = AutoTokenizer.from_pretrained(model_checkpoint, trust_remote_code=True)
 assert isinstance(tokenizer, transformers.PreTrainedTokenizerFast)
+
+if data == 'xsum':
+    tokenizer.pad_token = tokenizer.eos_token
 
 # load preprocess function
 preprocess_function = dataset.get_prepcoress_function(tokenizer)
@@ -101,7 +110,12 @@ test_dataset.set_format("torch")
 ### -------------- define training arguments -------------- ###
 
 # load pre-trained model
-model = model_type.from_pretrained(model_checkpoint)
+num_labels = None
+if data == 'sst5':
+    num_labels = max(max(train_dataset['labels']), max(test_dataset['labels']), max(val_dataset['labels'])) + 1
+    model = model_type.from_pretrained(model_checkpoint, trust_remote_code=True, num_labels=num_labels)
+else:
+    model = model_type.from_pretrained(model_checkpoint, trust_remote_code=True)
 model_name = model_checkpoint.split("/")[-1]
 model_path = f"output/models/{model_name}"
 
@@ -113,7 +127,7 @@ args = TrainingArguments(
     per_device_train_batch_size=batch_size,
     per_device_eval_batch_size=batch_size,
     auto_find_batch_size=True,
-    num_train_epochs=20,
+    num_train_epochs=2,
     weight_decay=0.01,
 )
 args_peft = TrainingArguments(
@@ -123,7 +137,7 @@ args_peft = TrainingArguments(
     per_device_train_batch_size=batch_size*2,
     per_device_eval_batch_size=batch_size*2,
     auto_find_batch_size=True,
-    num_train_epochs=20,
+    num_train_epochs=2,
     weight_decay=0.01,
 )
 
@@ -207,6 +221,11 @@ bitfit_trainer = BitFitTrainer(
 # create list of all trainers that we want to compare against each other
 # trainers = [trainer_fft, trainer_lora, soft_prompts_trainer]
 trainers = [trainer_fft, trainer_lora, soft_prompts_trainer, ia3_trainer, bitfit_trainer]
+if data == 'sst5':
+    trainers.remove(soft_prompts_trainer)
+# trainers = [trainer_fft, trainer_lora, ia3_trainer, bitfit_trainer]  
+# sst5 problematic: soft_prompts_trainer
+# sst5 ok: trainer_lora, trainer_fft, ia3_trainer, bitfit_trainer
 ### ------------ train and evaluate the model ------------- ###
 
 evaluator = EvaluatorBase(trainers)
@@ -223,7 +242,7 @@ if train_model:
 
 for trainer in trainers:
     print(f"------------------{trainer.trainer_name}------------------")
-    predictions = evaluator.inference_on_test_set(trainer, model_type)
+    predictions = evaluator.inference_on_test_set(trainer, model_type, num_labels)
     print(predictions)
 
 print('Done :)')

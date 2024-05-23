@@ -74,8 +74,11 @@ class EvaluatorBase:
         with open(output_file, 'w') as f:
             json.dump(metrics, f, indent=4) 
 
-    def inference_on_test_set(self, trainer, model_type):
-        loaded_model = model_type.from_pretrained(trainer.model_path)
+    def inference_on_test_set(self, trainer, model_type, num_labels=None):
+        if not num_labels is None:
+            loaded_model = model_type.from_pretrained(trainer.model_path, num_labels=num_labels)
+        else:
+            loaded_model = model_type.from_pretrained(trainer.model_path)
         trainer.model = loaded_model
         device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
         loaded_model.to(device)
