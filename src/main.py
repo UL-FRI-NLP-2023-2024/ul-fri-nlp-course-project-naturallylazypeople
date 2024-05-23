@@ -137,7 +137,7 @@ elif data == 'coreference':
         batched=True,
         remove_columns=[c for c in dataset_data["train"].column_names if c != 'label'])
 
-    model = model_type.from_pretrained(model_checkpoint, num_labels=42) #TODO: num_labels
+    model = model_type.from_pretrained(model_checkpoint, num_labels=43) #TODO: num_labels
     task_type = TaskType.TOKEN_CLS
 else:
     model = model_type.from_pretrained(model_checkpoint)

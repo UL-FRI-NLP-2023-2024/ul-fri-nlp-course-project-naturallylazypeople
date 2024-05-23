@@ -95,7 +95,7 @@ class CoNLLDataset(DatasetBase):
             current_word = None
             for word_id in word_ids:
                 if word_id is None:
-                    aligned_labels.append(-100)  # Special tokens are ignored in the loss function
+                    aligned_labels.append(42)  # Special tokens are ignored in the loss function
                 elif word_id != current_word:
                     aligned_labels.append(labels[word_id])
                     current_word = word_id
@@ -105,9 +105,9 @@ class CoNLLDataset(DatasetBase):
             # Convert aligned labels to int32 and pad to max_length
             aligned_labels = np.array(aligned_labels, dtype=np.int32)
             padding_length = tokenized_inputs['input_ids'].shape[1] - len(aligned_labels)
-            aligned_labels = np.pad(aligned_labels, (0, padding_length), mode='constant', constant_values=-100)
+            aligned_labels = np.pad(aligned_labels, (0, padding_length), mode='constant', constant_values=42)
             # pad for length of virtual_tokens for soft prompting
-            aligned_labels = np.pad(aligned_labels, (num_virtual_tokens, 0), mode='constant', constant_values=-100)
+            aligned_labels = np.pad(aligned_labels, (num_virtual_tokens, 0), mode='constant', constant_values=42)
 
             
             tokenized_inputs['labels'] = torch.tensor(aligned_labels, dtype=torch.int32).unsqueeze(0)  # Convert to tensor and add batch dimension
