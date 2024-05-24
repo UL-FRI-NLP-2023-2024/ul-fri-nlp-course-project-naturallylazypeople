@@ -29,8 +29,8 @@ import torch
 ### -------------- configure and define data -------------- ###
 
 #TODO all: change checkpoint  # microsoft/deberta-v2  # microsoft/deberta-v2-xlarge # classla/bcms-bertic
-model_checkpoint = "microsoft/deberta-v3-xsmall"
-batch_size = 2 #64
+model_checkpoint = "microsoft/deberta-v3-base"
+batch_size = 64
 
 # set whether model should be saved
 train_model = True
@@ -39,7 +39,7 @@ save_model = True
 # dataset: choose between 'slo_superglue', 'slo_super_glue_CB', 'xsum', 'commonsense', 'coreference', 'sst5'
 data = 'slo_super_glue_CB'
 # if you only want to train on subset of data, specify here
-num_data_points = 4 #-1  # else -1
+num_data_points = -1  # else -1
 
 ### --------------------- load dataset --------------------- ###
 
@@ -178,7 +178,7 @@ args = TrainingArguments(
     per_device_train_batch_size=batch_size,
     per_device_eval_batch_size=batch_size,
     auto_find_batch_size=True,
-    num_train_epochs=2,
+    num_train_epochs=20,
     weight_decay=0.01,
 )
 args_peft = TrainingArguments(
@@ -188,7 +188,7 @@ args_peft = TrainingArguments(
     per_device_train_batch_size=batch_size*2,
     per_device_eval_batch_size=batch_size*2,
     auto_find_batch_size=True,
-    num_train_epochs=2,
+    num_train_epochs=20,
     weight_decay=0.01,
 )
 
