@@ -5,7 +5,8 @@
 This project is conducted within the course "NLP" at University of Ljubljana (FRI). The objective is to implement and compare different PEFT (Parameter-Efficient Fine-Tuning) Methods for differenft NLP tasks. In our analysis, we will compare the following three methods:
 1. LoRA
 2. Soft Prompting
-3. BitFit.
+3. IA3
+4. BitFit.
 
 ## Overview of the Tasks
 
