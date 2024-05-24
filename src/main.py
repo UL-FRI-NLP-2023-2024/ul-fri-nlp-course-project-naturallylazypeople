@@ -9,6 +9,7 @@ from dataset_handler.xsum import XSumDataset
 from dataset_handler.commonsense_qa import CommonsenseQA
 from dataset_handler.coreference import CoNLLDataset
 from dataset_handler.sst5 import SST5Dataset
+from dataset_handler.slo_super_glue_CB import SLOSuperGlueCBDataset
 
 from evaluator.evaluator_base import EvaluatorBase
 
@@ -28,17 +29,17 @@ import torch
 ### -------------- configure and define data -------------- ###
 
 #TODO all: change checkpoint  # microsoft/deberta-v2  # microsoft/deberta-v2-xlarge # classla/bcms-bertic
-model_checkpoint = "microsoft/deberta-v3-base"
-batch_size = 64
+model_checkpoint = "microsoft/deberta-v3-xsmall"
+batch_size = 2 #64
 
 # set whether model should be saved
 train_model = True
 save_model = True
 
-# dataset: choose between 'slo_superglue', 'xsum', 'commonsense', 'coreference', 'sst5'
-data = 'commonsense'
+# dataset: choose between 'slo_superglue', 'slo_super_glue_CB', 'xsum', 'commonsense', 'coreference', 'sst5'
+data = 'slo_super_glue_CB'
 # if you only want to train on subset of data, specify here
-num_data_points = -1  # else -1
+num_data_points = 4 #-1  # else -1
 
 ### --------------------- load dataset --------------------- ###
 
@@ -52,6 +53,16 @@ if data == 'slo_superglue':
 
     dataset: DatasetBase = SLOSuperGlueDataset(
         superglue_data_path, 'BoolQ')
+elif data == 'slo_super_glue_CB':
+    # get path of working directory
+    pwd = os.getenv('PWD')
+    if pwd is None:
+        pwd = os.getcwd()
+    superglue_data_path = os.path.join(
+        pwd, 'data/SuperGLUE-GoogleMT/csv/')
+
+    dataset: DatasetBase = SLOSuperGlueCBDataset(
+        superglue_data_path, 'CB')
 elif data == 'xsum':
     dataset: DatasetBase = XSumDataset()
 elif data == 'commonsense':
@@ -111,6 +122,15 @@ num_virtual_tokens = 20
 num_labels = None
 if data == 'sst5':
     num_labels = max(max(train_dataset['labels']), max(test_dataset['labels']), max(val_dataset['labels'])) + 1
+    model = model_type.from_pretrained(model_checkpoint, trust_remote_code=True, num_labels=num_labels)
+
+    task_type = TaskType.SEQ_CLS
+
+    train_dataset_sp = train_dataset
+    val_dataset_sp = val_dataset
+    test_dataset_sp = test_dataset
+elif data == 'slo_super_glue_CB':
+    num_labels = 3
     model = model_type.from_pretrained(model_checkpoint, trust_remote_code=True, num_labels=num_labels)
 
     task_type = TaskType.SEQ_CLS
@@ -251,7 +271,7 @@ bitfit_trainer = BitFitTrainer(
 
 # create list of all trainers that we want to compare against each other
 trainers = [trainer_fft, trainer_lora, soft_prompts_trainer, ia3_trainer, bitfit_trainer]
-if data == 'sst5':
+if data == 'sst5' or data == 'slo_super_glue_CB':
     trainers.remove(soft_prompts_trainer) 
 # sst5 problematic: soft_prompts_trainer
 # sst5 ok: trainer_lora, trainer_fft, ia3_trainer, bitfit_trainer
