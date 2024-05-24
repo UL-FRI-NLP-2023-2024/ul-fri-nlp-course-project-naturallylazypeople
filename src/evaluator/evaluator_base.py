@@ -34,7 +34,10 @@ class EvaluatorBase:
         trainers = []
         for trainer in self.trainers:
             start_time = time.time()
-            trainer.train()
+            try:
+                trainer.train()
+            except Exception as e:
+                continue
             trainers.append(trainer)
             training_time = self.compute_training_time(start_time)
 

@@ -29,15 +29,15 @@ import torch
 ### -------------- configure and define data -------------- ###
 
 #TODO all: change checkpoint  # microsoft/deberta-v2  # microsoft/deberta-v2-xlarge # classla/bcms-bertic
-model_checkpoint = "microsoft/deberta-v3-base"
-batch_size = 64
+model_checkpoint = "microsoft/deberta-v3-small"
+batch_size = 128
 
 # set whether model should be saved
 train_model = True
 save_model = True
 
 # dataset: choose between 'slo_superglue', 'slo_super_glue_CB', 'xsum', 'commonsense', 'coreference', 'sst5'
-data = 'slo_super_glue_CB'
+data = 'coreference'
 # if you only want to train on subset of data, specify here
 num_data_points = -1  # else -1
 
