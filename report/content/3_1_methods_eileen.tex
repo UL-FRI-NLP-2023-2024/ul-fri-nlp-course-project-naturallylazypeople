@@ -1,1 +1,14 @@
-\paragraph{BitFit} summarization of bitfit
+\paragraph{BitFit} 
+Bias-terms Fine-tuning (BitFit) \cite{zaken2022bitfit} is a parameter-efficient fine-tuning technique for pretrained language models that focuses on updating only the bias terms of the model's weights. This approach aims to reduce the computational and memory resources required for fine-tuning while maintaining performance on downstream tasks.
+
+In BitFit, instead of updating all parameters $\mathbf{W}$ and $\mathbf{b}$, we update only the bias $\mathbf{b}$. The weights $\mathbf{W}$ remain fixed. During fine-tuning, the gradients are computed with respect to $\mathbf{b}$ only, and the updates are applied as follows:
+\[
+\mathbf{b} \leftarrow \mathbf{b} - \eta \frac{\partial \mathcal{L}}{\partial \mathbf{b}}
+\]
+where $\eta$ is the learning rate and $\mathcal{L}$ is the loss function.
+
+BitFit has three key properties: it can match the results of a fully fine-tuned model, it enables tasks to arrive in a stream without requiring simultaneous access to all datasets, and it fine-tunes only a small portion of the model's parameters. Specifically, BitFit trains less than 0.1\% of the total number of parameters, yet it achieves transfer learning performance comparable to, and sometimes better than, fine-tuning the entire network.
+
+\paragraph{Infused Adapter by Inhibiting and Amplifying Inner Activations (IA3)} The IA3 approach rescales inner activations with learned vectors. These learned vectors are injected in the attention and feedforward modules in a typical transformer-based architecture. These learned vectors are the only trainable parameters during fine-tuning, and thus the original weights remain frozen. Dealing with learned vectors (as opposed to learned low-rank updates to a weight matrix like LoRA) keeps the number of trainable parameters much smaller.
+
+Similar to LoRA, IA3 offers several advantages: it efficiently reduces the number of trainable parameters, with IA3 models typically having only about 0.01\% trainable parameters for base models like T0, compared to over 0.1\% for LoRA. Additionally, IA3 maintains frozen pre-trained weights, allowing for the creation of multiple lightweight and portable models for various tasks. Despite its parameter efficiency, models fine-tuned using IA3 demonstrate performance comparable to fully fine-tuned models, without introducing any inference latency.

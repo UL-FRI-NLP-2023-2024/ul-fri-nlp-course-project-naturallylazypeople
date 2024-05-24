@@ -1,3 +1,13 @@
 \paragraph{Prompt Tuning}
-% Prompt tuning\cite{lester2021power} is a process where users refine their input prompts to generate more accurate and relevant responses from AI models like GPT-3.5. It involves experimenting with different phrasings, keywords, and structures to guide the model towards desired outputs. By iteratively adjusting prompts, users can fine-tune the model's understanding and improve the quality of its responses for specific tasks or contexts. Prompt tuning is crucial for optimizing AI performance and tailoring its outputs to meet diverse needs effectively.
-summarization of prompt tuning
+Prompt tuning is an advanced technique in the field of natural language processing (NLP) that involves fine-tuning the prompts given to pre-trained language models to optimize their performance for specific tasks. Unlike traditional model training, which may involve adjusting vast numbers of parameters, prompt tuning focuses on crafting or adjusting the input prompts in a way that elicits more accurate or relevant responses from the model. This approach leverages the existing capabilities of large language models, allowing for efficient task-specific adaptation with minimal computational resources.
+
+Mathematically, consider a pre-trained language model \( f_\theta \) with parameters \( \theta \). Given an input sequence \( x \) and a task-specific prompt \( p \), the output is generated as:
+
+\[ y = f_\theta(p, x) \]
+
+where \( p \) is designed or tuned to optimize the model's performance on a particular task. The goal is to find an optimal prompt \( p^* \) that maximizes the performance metric \( \mathcal{M} \) on a validation set \( D_{\text{val}} \):
+
+\[ p^* = \arg\max_p \mathcal{M}(f_\theta(p, x), y) \quad \text{for} \quad (x, y) \in D_{\text{val}} \]
+
+By carefully designing prompts, practitioners can guide the model to generate desired outputs, improve performance on diverse tasks, and enhance the interpretability and controllability of AI systems.
+

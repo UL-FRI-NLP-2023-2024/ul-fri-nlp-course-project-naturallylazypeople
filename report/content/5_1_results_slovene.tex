@@ -1,26 +1,141 @@
+\paragraph{CommonsenseQA} The CommonsenseQA dataset is a benchmark designed to evaluate AI systems on commonsense reasoning. It consists of multiple-choice questions, each with five answer options and one correct answer. The questions cover various aspects of commonsense knowledge, such as physical properties, social behaviors, causal relationships, and temporal and spatial reasoning.
+
+The CommonsenseQA dataset consists of multiple-choice questions, each with five answer options (labeled A to E), one of which is correct. The correct answer is annotated for each question. The dataset is designed to challenge AI models to develop a deeper understanding of the world, similar to human commonsense reasoning. It is used to evaluate natural language understanding models, develop and benchmark new AI algorithms, and study AI's limitations and capabilities in understanding everyday scenarios. The CommonsenseQA dataset presents challenges such as handling ambiguity, context-dependence, and requiring complex reasoning.
+
+We finetuned the mdeberta-small model. We can see that when using LoRa PEFT method we can achieve almost the same performance than with full finetuning while requiring much less training time. The BitFit method does not give a good result for this dataset.
+
+\begin{table}[htbp]
+  \centering
+  \begin{tabularx}{\columnwidth}{@{} l *{3}{X} @{}}
+    \toprule
+    \textbf{Metric} & \textbf{FFT} & \textbf{LoRA} & \textbf{BitFit} \\
+    \midrule
+    Batch Size & 64 & 128 & 128 \\
+    Training Time [sec] & 5798 & 4523 & 4539 \\
+    RAM Usage [MB] & 1998 & 2002 & 2005 \\
+    \# Parameters [$\times 10^6$] & 14 & 0.03 & 0.033 \\
+    Accuracy & 0.66 & 0.65 & 0.42 \\
+    Precision & 0.66 & 0.65 & 0.42 \\
+    F1-Score & 0.66 & 0.65 & 0.42 \\
+    Recall & 0.66 & 0.65 & 0.43 \\
+    \bottomrule
+  \end{tabularx}
+  \caption{Performance of Full Finetuning vs PEFT methods on CommonsenseQA}
+  \label{tab:comparison}
+\end{table}
+
+\paragraph{CoNLL-2012} We will continue our analysis with the task of coreference resolution. Coreference resolution is the task of identifying when different expressions in a text refer to the same entity. The CoNLL-2012 shared task \footnote{\url{https://huggingface.co/datasets/conll2012_ontonotesv5}} is a benchmark dataset and competition for coreference resolution  which provides annotated data where entities are linked across sentences, helping models learn to recognize these relationships. We will fine-tune an mDeBERTa model of type DebertaForTokenClassification, i.e. a model with a token classification head suitable for coreference resolution tasks.
+
+Pre-processing for coreference resolution is quite different from pre-processing in the context of text classification. While text classification assigns a single label to an entire text (e.g. A or B), coreference resolution assigns labels to individual tokens to indicate their membership in coreference chains, which group tokens referring to the same entity. During tokenization, it is crucial to align these labels with the tokenized output. Furthermore, padding ensures consistent length for all token sequences. Tokens without corresponding coreference labels are padded with a special token to maintain alignment and indicate they do not belong to any coreference chain. This method accurately prepares the dataset for training a model to resolve coreferences in text.
+\begin{table}[htbp]
+    \centering
+    \resizebox{\columnwidth}{!}{%
+    \begin{tabular}{@{}llllll@{}}
+    \toprule
+    \textbf{Metric} & \textbf{FFT} & \textbf{LoRA} & \textbf{Soft Prompts} & \textbf{IA3} & \textbf{BitFit} \\ \midrule
+    Batch Size & 64 & 128 & 128 & 128 & 128 \\
+    Training Time [sec] & 2129 & 1803 & 1881 & 1799 & 1788 \\
+    RAM Usage [MB] & 2291 & 2302 & 2341 & 2341 & 2342 \\
+    \# Parameters [$\times 10^6$] & 183.86 & 0.64 & 0.05 & 0.06 & 0.10 \\
+    Accuracy & 0.76 & 0.78 & 0.79 & 0.78 & 0.77 \\
+    Precision & 0.64 & 0.61 & 0.63 & 0.61 & 0.61 \\
+    F1-Score & 0.69 & 0.68 & 0.70 & 0.68 & 0.68 \\
+    Recall & 0.76 & 0.78 & 0.79 & 0.78 & 0.77 \\
+    \bottomrule
+    \end{tabular}}
+    \caption{Performance of Full Finetuning vs PEFT methods on CoNLL-2012 for mDeBERTa-base}
+\end{table} Compared to Full Fine-Tuning, the PEFT methods dramatically reduce training time and memory usage. Despite their efficiency, PEFT methods achieve comparable, and in some cases superior results. Among the PEFT methods evaluated, Soft Prompts performed the best overall. It achieved the highest accuracy and recall, indicating it can identify correct answers more effectively and consistently. It even outperforms full-fine-tuning. Additionally, Soft Prompts had the second lowest RAM usage and a minimal number of trainable parameters, underscoring its efficiency. 
+
+If we compare the above results for mDeBERTa-base with the below results for mDeBERTa-small, we notice that the training time and RAM usage are significantly smaller for the mDeBERTa-small model. However, despite the smaller model size and reduced resource requirements, the performance in terms of accuracy, precision, recall, and F1-score remains similar between the two models. This suggests that the mDeBERTa-small model offers a more resource-efficient alternative without compromising on performance compared to the larger mDeBERTa-base model.
+
+\begin{table}[htbp]
+    \centering
+    \resizebox{\columnwidth}{!}{%
+    \begin{tabular}{@{}llllll@{}}
+    \toprule
+    \textbf{Metric} & \textbf{FFT} & \textbf{LoRA} & \textbf{Soft Prompts} & \textbf{IA3} & \textbf{BitFit} \\ \midrule
+    Batch Size & 64 & 128 & 128 & 128 & 128 \\
+    Training Time [sec] & 1114 & 971 & 1060 & 951 & 958 \\
+    RAM Usage [MB] & 1926 & 1928 & 2024 & 2100 & 2094 \\
+    \# Parameters [$\times 10^6$] & 141.34 & 0.34 & 0.05 & 0.05 & 0.05 \\
+    Accuracy & 0.77 & 0.77 & 0.78 & 0.77 & 0.63 \\
+    Precision & 0.63 & 0.61 & 0.62 & 0.61 & 0.40 \\
+    F1-Score & 0.69 & 0.68 & 0.69 & 0.68 & 0.49 \\
+    Recall & 0.77 & 0.77 & 0.78 & 0.77 & 0.63 \\
+    \bottomrule
+    \end{tabular}}
+    \caption{Performance of Full Finetuning vs PEFT methods on CoNLL-2012 for mDeBERTa-small}
+    \label{tab:comparison}
+\end{table}
+
 \paragraph{Slovene SuperGLUE} While most of the research in the field of NLP has been conducted for the English language, we also aim at applying the PEFT methods to multilingual text reasoning. The benchmark used is the Slovene SuperGLUE \cite{robnik2022superglue}, which is the Slovene version of the English SuperGLUE. The benchmark consists of eight tasks encompassing general NLP tasks. Let us begin with the task BoolQ: a dataset with questions and binary answers \footnote{\url{https://huggingface.co/datasets/google/boolq}}. Each instance consists of three components: a question, a passage, and an answer, with the possibility of including the page title as supplementary context. This configuration mirrors the structure of typical natural language inference tasks focused on text pairs.
 
-We employed the BERTić \cite{ljubesic2021bertic} model for fine-tuning, which is a transformer language model specifically designed for Bosnian, Croatian, Montenegrin, and Serbian. BERTić has been trained on large corpora in these languages and has shown effectiveness in various NLP tasks in the region.
+We employed an mDeBERTa model, see Table \ref{tab:superglue-mdeberta}, as well as a BERTić \cite{ljubesic2021bertic} model, see Table \ref{tab:superglue-bertic}, for fine-tuning, which is a transformer language model specifically designed for Bosnian, Croatian, Montenegrin, and Serbian. Note that for BERTić, we had resources on the shared cluster for training only LoRA and FFT.
 
 \begin{table}[htbp]
   \centering
   \label{tab:comparison}
   \resizebox{\columnwidth}{!}{%
-    \begin{tabular}{@{}llll@{}}
+    \begin{tabular}{@{}lllll@{}}
     \toprule
-    \textbf{Metric} & \textbf{FFT} & \textbf{LoRA} & \textbf{Unit} \\ \midrule
-    Training Time & 3967.46 & 3276.88 & seconds \\
-    RAM Usage & 760.78 & 458.01 & MB \\
-    Num. Parameters & 110,618,882 & 1,200,386 & - \\
-    Accuracy & 0.74 & 0.65 & - \\
-    Precision & 0.78 & 0.71 & - \\
-    F1-Score & 0.79 & 0.73 & - \\
-    Recall & 0.81 & 0.75 & - \\
+    \textbf{Metric} & \textbf{FFT} & \textbf{LoRA} & \textbf{Soft Prompts} & \textbf{BitFit} \\ \midrule
+    Batch Size & 64 & 128 & 128 & 128 \\
+    Training Time [sec] & 5282 & 4478 & 4567 & 4456 \\
+    RAM Usage [MB] & 2337 & 2338 & 2338 & 2337 \\
+    \# Parameters [$\times 10^6$] & 278.6 & 0.62 & 0.16 & 0.1 \\
+    Accuracy & 0.7 & 0.63 & 0.62 & 0.65 \\
+    Precision & 0.74 & 0.78 & 0.62 & 0.62 \\
+    F1-Score & 0.77 & 0.72 & 0.76 & 0.76 \\
+    Recall & 0.81 & 0.77 & 1.0 & 1.0 \\
     \bottomrule
     \end{tabular}}
-    \caption{Comparison of Full Fine Tuning (FFT) vs. LoRA }
+    \caption{Performance of Full Finetuning vs PEFT methods on Slovene SuperGLUE for mDeBERTa-base}
+    \label{tab:superglue-mdeberta}
 \end{table}
 
-When comparing the full fine-tuning (FFT) method with the LoRA method on the Slovene SuperGLUE task, several important observations can be made. Firstly, LoRA exhibits notable computational advantages in terms of training time and memory usage, which suggests its potential for efficient model training, especially in resource-constrained environments. However, the reduction in trainable parameters with LoRA might imply a trade-off in model complexity and potentially performance. The higher number of parameters in FFT indicates a more complex model, which can capture finer nuances in the data, potentially leading to better performance metrics such as accuracy, precision, F1-score, and recall. The discrepancy in performance between FFT and LoRA underscores the importance of considering not only computational efficiency but also model capacity and task-specific requirements when selecting a fine-tuning method. 
+\begin{table}[htbp]
+  \centering
+  \begin{tabularx}{\columnwidth}{@{} l *{3}{X} @{}}
+    \toprule
+    \textbf{Metric} & \textbf{FFT} & \textbf{LoRA} \\ \midrule
+    Batch Size & 64 & 128\\
+    Training Time [sec] & 3967 & 3277\\
+    RAM Usage [MB] & 761 & 458\\
+    \# Parameters [$\times 10^6$] & 110.6 & 1.2\\
+    Accuracy & 0.74 & 0.65\\
+    Precision & 0.78 & 0.71\\
+    F1-Score & 0.79 & 0.73\\
+    Recall & 0.81 & 0.75\\
+    \bottomrule
+  \end{tabularx}
+  \caption{Performance of Full Finetuning vs LoRA on Slovene SuperGLUE for BERTić}
+  \label{tab:superglue-bertic}
+\end{table}
 
-While LoRA may offer computational advantages, FFT's superior performance on this particular Slovene task suggests that a balance between computational efficiency and model complexity is crucial for achieving optimal results in NLP tasks.
+For mDeBERTa, the LoRA technique stands out with significantly lower RAM usage and a remarkable reduction in the number of parameters compared to full fine-tuning, while maintaining competitive performance. On the other hand, Soft Prompts and BitFit show promising results in terms of accuracy and precision, although they require slightly more training time and memory resources. For BERTić, the LoRA method also demonstrates a substantial reduction in RAM usage and parameter count, with a notable improvement in precision compared to full fine-tuning. These findings suggest that LoRA could be a viable option for enhancing model efficiency without compromising task performance across different languages and models.
+
+\paragraph{SST-5} dataset (also known as Stanford Sentiment Treebank with 5 labels) was created to test model's capacity for sentiment classification. It contains 11855 sentences from movie reviews labeled by human judges. Label of the review can be one of the five classes - negative, somewhat negative, neutral, somewhat positive and positive. Therefore the dataset is sometimes also referred as SST fine-graned. 
+
+Before tokenizing sentences for the model we do basic preprocessing which involves removal of special characters, conversion to lower case and removal of stopwords.
+
+For this dataset we employed Deberta model for classification. Results of the finetuning can be seen in Table \ref{tab:sst5_deberta_base}. Lora seems to be performing the best out of all peft methods, regarding accuracy and recall. Other metrics are slightly better or comparable with the other peft methods.
+
+\begin{table}[htbp]
+  \centering
+  \resizebox{\columnwidth}{!}{%
+    \begin{tabular}{@{}llllll@{}}
+    \toprule
+    \textbf{Metric} & \textbf{FFT} & \textbf{LoRA} & \textbf{IA3} & \textbf{BitFit} \\ \midrule
+    Batch Size & 64 & 128 & 128 & 128 \\
+    Training Time [sec] & 663 & 542 & 548 & 531 \\
+    RAM Usage [MB] & 1979 & 2105 & 2105 & 2105 \\
+    \# Parameters [$\times 10^6$] & 184.43 & 0.61 & 0.07 & 0.10 \\
+    Accuracy & 0.52 & 0.42 & 0.25 & 0.25 \\
+    Precision & 0.52 & 0.22 & 0.2 & 0.06 \\
+    F1-Score & 0.51 & 0.29 & 0.2 & 0.06 \\
+    Recall & 0.52 & 0.42 & 0.25 & 0.25 \\
+    \bottomrule
+    \end{tabular}}
+    \caption{Performance of Full Finetuning vs PEFT methods on SST5 for mDEBERTA-base}
+    \label{tab:sst5_deberta_base}
+\end{table}

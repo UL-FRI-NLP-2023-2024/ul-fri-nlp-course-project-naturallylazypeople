@@ -47,10 +47,10 @@
 \Authors{Ondřej Komín, Andrej Sušnik, Eileen Vu}
 
 % Advisors
-\affiliation{\textit{Advisors: Slavko Žitnik}}
+\affiliation{\textit{Advisors: Boshko Koloski, Slavko Žitnik}}
 
 % Keywords
-\Keywords{Keyword1, Keyword2, Keyword3 ...}
+\Keywords{PEFT, LoRA, Prompt tuning, IA3, BitFit, CommonsenseQA, SloSuperGlue, CoNLL-2012, SST5}
 \newcommand{\keywordname}{Keywords}
 
 
@@ -58,7 +58,9 @@
 %	ABSTRACT
 %----------------------------------------------------------------------------------------
 
-\Abstract{This is the abstract}
+\Abstract{
+In this paper we present different parameter efficient fine tuning methods, i.e. LoRA, Soft prompts tuning, IA3 and Bitfit, and apply them to various NLP tasks.  Our evaluation reveals that Soft Prompts tuning, in certain tasks, can surpass full fine-tuning while requiring less training time. Additionally, we observe that LoRA finds a good balance between performance and training time across different tasks.
+}
 
 %----------------------------------------------------------------------------------------
 
@@ -116,12 +118,13 @@
 \section*{Results}
 \input{content/5_0_results}
 %------------------------------------------------
-\section*{Future directions, ideas}
-\input{content/7_future_directions}
-%------------------------------------------------
 \section*{Discussion}
 \input{content/6_discussion}
 %------------------------------------------------
+\section*{Conclusion}
+\input{content/7_future_directions}
+%------------------------------------------------
+
 % \section*{Backup}
 % \input{content/backup}
 %----------------------------------------------------------------------------------------
