@@ -50,7 +50,7 @@ class SLOSuperGlueCBDataset(DatasetBase):
         })
     
     def get_dataset_task_description(self):
-        return "Ali je naslednja trditev resnična:"
+        return "Ali je naslednja posledica, protislovje ali nevtralno?: "
 
     def preprocess_text(self, text):
         # Clean and normalize text
@@ -95,9 +95,6 @@ class SLOSuperGlueCBDataset(DatasetBase):
             # The offset mappings will give us a map from token to character position in the original context. This will
             # help us compute the start_positions and end_positions.
             offset_mapping = tokenized_examples.pop("offset_mapping")
-
-            if max([len(t) for t in tokenized_examples['input_ids']]) > max_length:
-                print("Max length exceeded")
 
             if "label" in examples:
                 # Let's label those examples!
